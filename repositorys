@@ -1,0 +1,313 @@
+::UBUNTU
+Отредактируйте файл /etc/apt/sources.list:
+8.04 Hardy Heron LTS
+
+deb http://ftp.mgts.by/pub/ubuntu/ hardy main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ hardy-security main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ hardy-updates main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ hardy-proposed main restricted universe multiverse
+
+8.10 Intrepid Ibex
+
+deb http://ftp.mgts.by/pub/ubuntu/ intrepid main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ intrepid-security main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ intrepid-updates main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ intrepid-proposed main restricted universe multiverse
+
+9.04 Jaunty Jackalope (ftp.mgts.by)
+
+deb http://ftp.mgts.by/pub/ubuntu/ jaunty main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ jaunty-security main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ jaunty-updates main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ jaunty-proposed main restricted universe multiverse
+
+9.04 Jaunty Jackalope (mirror.datacenter.by)
+
+deb http://mirror.datacenter.by/pub/ubuntu/ jaunty main restricted universe multiverse
+deb http://mirror.datacenter.by/pub/ubuntu/ jaunty-security main restricted universe multiverse
+deb http://mirror.datacenter.by/pub/ubuntu/ jaunty-updates main restricted universe multiverse
+deb http://mirror.datacenter.by/pub/ubuntu/ jaunty-proposed main restricted universe multiverse
+
+9.10 Karmic Koala
+
+deb http://ftp.mgts.by/pub/ubuntu/ karmic main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ karmic-security main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ karmic-updates main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ karmic-proposed main restricted universe multiverse
+
+10.04 Lucid Lynx
+
+Способ 1-й:
+
+Самый ленивый вариант Система->Администрирование->Источники приложений В первой вкладке в поле "Загрузить с" указываем "Другой сервер" прокручиваем вверх до "Беларусь" и указываем ftp.byfly.by/ubuntu Далее закрываем окно и на вопрос обновить репозитарии соглашаемся.
+
+Способ 2-й:
+
+deb http://ftp.mgts.by/pub/ubuntu/ lucid main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ lucid-security main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ lucid-updates main restricted universe multiverse
+deb http://ftp.mgts.by/pub/ubuntu/ lucid-proposed main restricted universe multiverse
+
+После изменения файла выполните следующие команды:
+
+sudo aptitude update
+sudo aptitude upgrade
+sudo aptitude dist-upgrade
+
+::OPENSUSE
+
+При помощи графической утилиты YaST или консольной Zypper добавьте (пример для zypper):
+11.3
+
+zypper ar http://ftp.byfly.by/pub/opensuse/distribution/11.3/repo/oss/ oss
+zypper ar http://ftp.byfly.by/pub/opensuse/distribution/11.3/repo/non-oss/ non-oss
+zypper ar http://ftp.byfly.by/pub/opensuse/update/11.3/ updates
+
+11.2
+
+zypper ar http://ftp.byfly.by/pub/opensuse/distribution/11.2/repo/oss/ oss
+zypper ar http://ftp.byfly.by/pub/opensuse/distribution/11.2/repo/non-oss/ non-oss
+zypper ar http://ftp.byfly.by/pub/opensuse/update/11.2/ updates
+
+11.1
+
+zypper ar http://ftp.byfly.by/pub/opensuse/distribution/11.1/repo/oss/ oss
+zypper ar http://ftp.byfly.by/pub/opensuse/distribution/11.1/repo/non-oss/ non-oss
+zypper ar http://ftp.byfly.by/pub/opensuse/update/11.1/ updates
+
+11.0
+
+zypper ar http://ftp.byfly.by/pub/opensuse/distribution/11.0/repo/oss/ oss
+zypper ar http://ftp.byfly.by/pub/opensuse/distribution/11.0/repo/non-oss/ non-oss
+zypper ar http://ftp.byfly.by/pub/opensuse/update/11.0/ updates
+
+10.3
+
+zypper ar http://ftp.byfly.by/pub/opensuse/distribution/10.3/repo/oss/ oss
+zypper ar http://ftp.byfly.by/pub/opensuse/distribution/10.3/repo/non-oss/ non-oss
+zypper ar http://ftp.byfly.by/pub/opensuse/update/10.3/ updates
+
+Драйвера nVidia
+
+Собранные в rmp-пакеты видио драйверы от nVidia
+
+11.3
+
+zypper ar http://ftp.mgts.by/pub/misc/download.nvidia.com/opensuse/11.3/
+
+11.2
+
+zypper ar http://ftp.mgts.by/pub/misc/download.nvidia.com/opensuse/11.2/
+
+11.1
+
+zypper ar http://ftp.mgts.by/pub/misc/download.nvidia.com/opensuse/11.1/
+
+11.0
+
+zypper ar http://ftp.mgts.by/pub/misc/download.nvidia.com/opensuse/11.0/
+
+packman
+
+Кодеки и прочие радости которых нет в oss и non-oss
+11.3
+
+zypper ar http://ftp.mgts.by/pub/misc/packman/suse/11.3/
+
+11.2
+
+zypper ar http://ftp.mgts.by/pub/misc/packman/suse/11.2/
+
+11.1
+
+zypper ar http://ftp.mgts.by/pub/misc/packman/suse/11.1/
+
+11.0
+
+zypper ar http://ftp.mgts.by/pub/misc/packman/suse/11.0/
+
+::MANDRIVA
+
+2010.1
+
+i586
+
+Выполните в консоли:
+
+sudo urpmi.addmedia --distrib  MGTS http://ftp.byfly.by/pub/mandriva/official/2010.1/i586/
+
+x86_64
+
+Выполните в консоли:
+
+sudo urpmi.addmedia --distrib  MGTS http://ftp.byfly.by/pub/mandriva/official/2010.1/x86_64/
+
+2009.1
+
+i586
+
+Выполните в консоли:
+
+sudo urpmi.addmedia --distrib  MGTS http://ftp.byfly.by/pub/mandriva/official/2009.1/i586/
+
+x86_64
+
+Выполните в консоли:
+
+sudo urpmi.addmedia --distrib  MGTS http://ftp.byfly.by/pub/mandriva/mandriva/official/2009.1/x86_64/
+
+2009.0
+
+i586
+
+Выполните в консоли:
+
+sudo urpmi.addmedia --distrib  MGTS http://ftp.byfly.by/pub/mandriva/mandriva/official/2009.0/i586/
+
+x86_64
+
+Выполните в консоли:
+
+sudo urpmi.addmedia --distrib  MGTS http://ftp.byfly.by/pub/mandriva/official/2009.0/x86_64/
+
+2008.1
+
+i586
+
+Выполните в консоли:
+
+sudo urpmi.addmedia --distrib  MGTS http://ftp.byfly.by/pub/mandriva/official/2008.1/i586/
+
+
+x86_64
+
+Выполните в консоли:
+
+sudo urpmi.addmedia --distrib  MGTS http://ftp.byfly.by/pub/mandriva/official/2008.1/x86_64/
+
+::GENTOO
+
+Distfiles
+
+В /etc/make.conf:
+
+GENTOO_MIRRORS= "http://ftp.byfly.by/pub/gentoo-distfiles/"
+
+Portage
+
+В /etc/make.conf:
+
+PORTAGE_MIRROR= "rsync://ftp.byfly.by/gentoo-portage/"
+
+::DEBIAN
+
+Отредактируйте файл /etc/apt/sources.list:
+
+Stable (Lenny)
+
+deb http://ftp.mgts.by/pub/debian/ stable main contrib non-free
+deb http://ftp.mgts.by/pub/debian/ lenny-proposed-updates main contrib non-free
+deb http://ftp.mgts.by/pub/debian-security/ stable/updates main contrib non-free
+deb http://ftp.mgts.by/pub/debian-volatile/ stable/volatile main contrib non-free
+
+Testing (Squeeze)
+
+deb http://ftp.mgts.by/pub/debian/ testing main contrib non-free
+deb http://ftp.mgts.by/pub/debian/ squeeze-proposed-updates main contrib non-free
+deb http://ftp.mgts.by/pub/debian-security/ testing/updates main contrib non-free
+deb http://ftp.mgts.by/pub/debian-volatile/ testing/volatile main contrib non-free
+
+Unstable (Sid)
+
+deb http://ftp.mgts.by/pub/debian/ unstable main contrib non-free
+deb http://ftp.mgts.by/pub/debian/ sid-proposed-updates main contrib non-free
+deb http://ftp.mgts.by/pub/debian-security/ unstable/updates main contrib non-free
+deb http://ftp.mgts.by/pub/debian-volatile/ unstable/volatile main contrib non-free
+
+После изменения файла выполните следующие команды:
+
+sudo aptitude update
+sudo aptitude upgrade
+sudo aptitude dist-upgrade
+
+::ARCH
+
+Отредактируйте файл /etc/pacman.d/mirrorlist:
+
+i686
+
+Откройте файл /etc/pacman.conf
+
+Закоментируйте следующие строки в разделах [core], [extra], [community]:
+
+Include = /etc/pacman.d/mirrorlist
+
+Добавляем строки в раздел [core]:
+
+Server = http://ftp.byfly.by/pub/archlinux/core/os/i686
+
+в раздел [extra]:
+
+Server = http://ftp.byfly.by/pub/archlinux/extra/os/i686
+
+в раздел [community]:
+
+Server = http://ftp.byfly.by/pub/archlinux/community/os/i686
+
+x86_64
+
+Откройте файл /etc/pacman.conf
+
+Закоментируйте следующие строки в разделах [core], [extra], [community]:
+
+Include = /etc/pacman.d/mirrorlist
+
+Добавляем строки в раздел [core]:
+
+Server = http://ftp.byfly.by/pub/archlinux/core/os/x86_64
+
+в раздел [extra]:
+
+Server = http://ftp.byfly.by/pub/archlinux/extra/os/x86_64
+
+в раздел [community]:
+
+Server = http://ftp.byfly.by/pub/archlinux/community/os/x86_64
+
+::ALT
+
+p5/branch (stable)
+
+i586
+
+rpm http://ftp.byfly.by/pub/ALTLinux/p5/branch  i586 classic
+rpm http://ftp.byfly.by/pub/ALTLinux/p5/branch  noarch classic
+
+x86_64
+
+rpm http://ftp.byfly.by/pub/ALTLinux/p5/branch  x86_64 classic
+rpm http://ftp.byfly.by/pub/ALTLinux/p5/branch  noarch classic
+
+5.1/branch (stable)
+
+i586
+
+rpm http://ftp.byfly.by/pub/ALTLinux/5.1/branch  i586 classic
+rpm http://ftp.byfly.by/pub/ALTLinux/5.1/branch  noarch classic
+
+x86_64
+
+rpm http://ftp.byfly.by/pub/ALTLinux/5.1/branch  x86_64 classic
+rpm http://ftp.byfly.by/pub/ALTLinux/5.1/branch  noarch classic
+
+Sisyphus (unstable)
+
+i586
+
+rpm http://ftp.byfly.by/pub/ALTLinux/4.1/branch  i586 classic
+rpm http://ftp.byfly.by/pub/ALTLinux/4.1/branch  noarch classic
+
+x86_64
+
+rpm http://ftp.byfly.by/pub/ALTLinux/4.1/branch  x86_64 classic
+rpm http://ftp.byfly.by/pub/ALTLinux/4.1/branch  noarch classic

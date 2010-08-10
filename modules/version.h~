@@ -1,0 +1,45 @@
+#include <gloox/iqhandler.h>
+#include <gloox/jid.h>
+#include <gloox/client.h>
+#include <gloox/tag.h>
+#include <gloox/disco.h>
+
+class Version : public gloox::IqHandler{
+public:
+    struct version{
+	std::string os;
+	std::string client;
+	std::string clientVersion;
+    };
+
+    class VersionHandler{
+    public:
+	virtual ~VersionHandler(){}
+	virtual void HandleVersion( const version &v) = 0;
+	virtual void HandleVersionError() = 0;
+    };
+
+    class Query : public gloox::StanzaExtension{
+    public:
+	                               Query( const gloox::Tag* tag = 0 );
+	virtual                        ~Query();
+	version                        Result() const;
+	virtual const std::string      &filterString() const;
+	virtual gloox::StanzaExtension *newInstance( const gloox::Tag* tag ) const;
+	virtual gloox::Tag*            tag() const ;
+	virtual gloox::StanzaExtension *clone() const;
+    private:
+	version v;
+    };
+
+                 Version( gloox::ClientBase* cl );
+                 ~Version();
+    void         query( const gloox::JID& jid );
+    void         registerTestHandler( VersionHandler *th );
+    void         removeTestHandler();
+    virtual bool handleIq( const gloox::IQ& iq );
+    virtual void handleIqID( const gloox::IQ &iq, int context );
+protected:
+    gloox::ClientBase *client;
+    VersionHandler    *handler;
+};

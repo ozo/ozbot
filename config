@@ -1,0 +1,33 @@
+JID:
+ozobot@xdsl.by/Kata
+PSWD:    
+33846033917626
+MUCJID: #
+linux@conference.xdsl.by/Kata
+blogs@conference.xdsl.by/Kata
+devby@conference.xdsl.by/Kata
+беларусы@conference.jabber.ru/Kata
+ROOTS:
+linux@conference.xdsl.by/ozo
+blogs@conference.xdsl.by/ozo
+devby@conference.xdsl.by/ozo
+linux@conference.xdsl.by/scriptick
+беларусы@conference.jabber.ru/ozo
+MODES:
+#log MUC module
+LOG
+#quastions/answer MUC module
+QUASTIONS quastions
+#client & vcard muc module
+INFO
+#admin muc module
+ADMIN
+#bad muc module
+BAD badword
+#quiz muc mode
+QUIZ
+#parse bash.org.ru and bash.org.by modul
+PARSER
+#calculate modul
+CALC
+REPO repositorys
