@@ -11,9 +11,6 @@
 #include <set>
 #include <queue>
 
-class LogModul;
-class QuastionModul;
-
 namespace gloox{
     class Message;
 }
@@ -68,6 +65,6 @@ protected:
     std::list< gloox::MUCRoom* >    rooms;
     std::map< std::string, Modul* > loadedModules;
     std::set< std::string >         inRoom;
-    QuastionModul                   *qModul;
 };
+
 #endif

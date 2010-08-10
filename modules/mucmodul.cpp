@@ -10,6 +10,7 @@
 #include "logmodul.h"
 #include "quastionmodul.h"
 #include "idlemodul.h"
+#include "aliasmodul.h"
 
 #include <algorithm>
 #include <cstring>
@@ -23,8 +24,7 @@ MUCModul::MUCModul( gloox::Client *cl
 		    , const std::list< std::string > &rootsJid
 		    , const std::list< std::string > &mucJids
 		    , const std::list< std::string > &defModules )
-    : RootModul( cl, rootsJid )
-    , qModul( 0 ){
+    : RootModul( cl, rootsJid ){
     version.first = new Version( client );
     version.first->RegisterVersionHandler( this );
 
@@ -60,7 +60,6 @@ MUCModul::~MUCModul(){
 	(*i)->removeMUCRoomHandler( );
 	delete *i;
     }
-    qModul = 0;
     delete version.first;
 }
 
@@ -80,13 +79,19 @@ void MUCModul::handleMUCMessage( gloox::MUCRoom *room
     if( msg.from().resource() == room->nick() || msg.body().empty() || msg.when() )
 	return;
 
-    std::string upper = toUpper( msg.body() );
+    std::string body = msg.body();
+    std::map< std::string, Modul* >::iterator aliasit = loadedModules.find( "ALIAS" );
+    if( aliasit != loadedModules.end() ){
+	AliasModul *aliasModul = static_cast< AliasModul* >( &(*aliasit->second ) );
+	aliasModul->ReplaceAliases( msg.from(), body );
+    }
+    std::string upper = toUpper( body );
 
     for( std::map< std::string, Modul* >::iterator i = loadedModules.begin()
 	     ; i != loadedModules.end(); ++i )
 	for( int curWord = 0, length = numberOfWords( upper ); curWord < length; ++curWord )
 	    if( i->second->IsHaveMode( getWord( upper, curWord ) ) ){
-		i->second->Message( room, msg.body(), upper, msg.from(), priv );
+		i->second->Message( room, body, upper, msg.from(), priv );
 		break;
 	    }
 }
@@ -211,22 +216,25 @@ void MUCModul::handleMUCParticipantPresence( gloox::MUCRoom *room
 					, const gloox::MUCRoomParticipant participant
 					,  const gloox::Presence& presence ){
     std::map< std::string, Modul* >::iterator idleIt = loadedModules.find( "IDLE" );
-    const bool haveIdleModul( idleIt != loadedModules.end() );
     IdleModul *idle = 0;
-    if( haveIdleModul )
+    if( idleIt != loadedModules.end() )
 	idle = static_cast< IdleModul* >( &( *idleIt->second ) );
 
+    std::map< std::string, Modul* >::iterator qIt = loadedModules.find( "QUASTIONS" );
+    QuastionModul *quastions = 0;
+    if( qIt != loadedModules.end() )
+	quastions = static_cast< QuastionModul* >( &( *qIt->second ) );
+    
     const std::string nick = participant.nick->full();
     if( presence.presence() == gloox::Presence::Unavailable ){
-	if( qModul )
-	    qModul->DeleteUser( nick );
+	if( quastions )
+	    quastions->DeleteUser( nick );
 	if( inRoom.find( nick ) != inRoom.end() )
 	    inRoom.erase( inRoom.find( nick ) );
-	if( haveIdleModul )
+	if( idle )
 	    idle->RemoveUser( nick );
     } else {
 	if( inRoom.find( nick ) == inRoom.end()
-	    && presence.presence() != gloox::Presence::Unavailable
 	    && participant.affiliation == gloox::AffiliationNone ){
 	    version.first->query( nick, 0 );
 	    version.second.push( room );
@@ -234,9 +242,9 @@ void MUCModul::handleMUCParticipantPresence( gloox::MUCRoom *room
 	}
 	if( inRoom.find( nick ) == inRoom.end() )
 	    inRoom.insert( nick );
-	if( qModul )
-	    qModul->AddUser( nick );
-	if( haveIdleModul )
+	if( quastions )
+	    quastions->AddUser( nick );
+	if( idle )
 	    idle->RegisterUser( nick );
     }
 }
@@ -275,7 +283,7 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 
     const std::string FILE = ( numberOfWords( loadString ) > 1 ) ? getWord( loadString, 1 ) : "";
 
-    const int   MODULES_LENGTH = 11;
+    const int   MODULES_LENGTH = 12;
     std::string modules[ MODULES_LENGTH ]      = { "LOG"
 						   , "QUASTIONS"
 						   , "INFO"
@@ -286,6 +294,7 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 						   , "CALC"
 						   , "REPO"
 						   , "IDLE"
+						   , "ALIAS"
 						   , "MUCROOM"
                                                  };
     bool isHave = 0;
@@ -298,8 +307,8 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 	    case 1:
 		if( FILE.empty() )
 		    return 0;
-		qModul = new QuastionModul( client, FILE );
-		loadedModules.insert( std::make_pair( modules[i], qModul ) );
+		loadedModules.insert( std::make_pair( modules[i]
+						      , new QuastionModul( client, FILE ) ) );
 		break;
 	    case 2:
 		loadedModules.insert( std::make_pair( modules[i], new InfoModul( client ) ) );
@@ -333,6 +342,10 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 						      , new IdleModul( client, inRoom ) ) );
 		break;
 	    case 10:
+		loadedModules.insert( std::make_pair( modules[i]
+						      , new AliasModul( client ) ) );
+		break;
+	    case 11:
 		loadedModules.insert( std::make_pair( modules[i], this ) );
 		break;
 	    }
@@ -342,12 +355,13 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 }
 
 bool MUCModul::UnLoadModul( const std::string &mode ){
+    if( mode == "MUCROOM" )
+	return 0;
+
     std::map< std::string, Modul*>::iterator mod = loadedModules.find( mode );
-    if( mod != loadedModules.end() && mode != "MUCROOM" ){
+    if( mod != loadedModules.end() ){
 	delete mod->second;
 	loadedModules.erase( mod );
-	if( mode == "QUASTIONS" )
-	    qModul = 0;
 	return 1;
     } else
 	return 0;
