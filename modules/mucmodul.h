@@ -69,6 +69,5 @@ protected:
     std::map< std::string, Modul* > loadedModules;
     std::set< std::string >         inRoom;
     QuastionModul                   *qModul;
-    LogModul                        *log;
 };
 #endif

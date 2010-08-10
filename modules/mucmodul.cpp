@@ -9,6 +9,7 @@
 #include "repositorymodul.h"
 #include "logmodul.h"
 #include "quastionmodul.h"
+#include "idlemodul.h"
 
 #include <algorithm>
 #include <cstring>
@@ -23,13 +24,13 @@ MUCModul::MUCModul( gloox::Client *cl
 		    , const std::list< std::string > &mucJids
 		    , const std::list< std::string > &defModules )
     : RootModul( cl, rootsJid )
-    , qModul( 0 )
-    , log( 0 ){
+    , qModul( 0 ){
     version.first = new Version( client );
     version.first->RegisterVersionHandler( this );
 
     gloox::MUCRoom *tmp;
-    for( std::list< std::string >::const_iterator jid = mucJids.begin(); jid != mucJids.end(); ++jid ){
+    for( std::list< std::string >::const_iterator jid = mucJids.begin()
+	     ; jid != mucJids.end(); ++jid ){
 	tmp = new gloox::MUCRoom( client, *jid, this, 0 );
 	tmp->join( gloox::Presence::Chat, "C++ круче Кольца Всевластья!");
 	rooms.push_back( tmp );
@@ -37,7 +38,8 @@ MUCModul::MUCModul( gloox::Client *cl
     
     LoadModul( "MUCROOM" );
 
-    for( std::list< std::string >::const_iterator i = defModules.begin(); i != defModules.end(); ++i )
+    for( std::list< std::string >::const_iterator i = defModules.begin()
+	     ; i != defModules.end(); ++i )
 	LoadModul( *i );
 
     AddMode( "!HELP", "Получить помощь по каманде : !help <команда>" );
@@ -59,7 +61,6 @@ MUCModul::~MUCModul(){
 	delete *i;
     }
     qModul = 0;
-    log    = 0;
     delete version.first;
 }
 
@@ -69,7 +70,11 @@ void MUCModul::handleMUCMessage( gloox::MUCRoom *room
     if( msg.body().length() > 1000 )
 	return;
 
-    if( !priv && log )
+    std::map< std::string, Modul* >::iterator logIt = loadedModules.find( "LOG" );
+    bool haveLog = ( logIt != loadedModules.end() );
+    LogModul *log;
+    log = static_cast< LogModul* >( &(*logIt->second ) );
+    if( !priv && haveLog )
     	log->AddToLog( room->name(), msg.from().resource(), msg.body() );
 
     if( msg.from().resource() == room->nick() || msg.body().empty() || msg.when() )
@@ -77,7 +82,8 @@ void MUCModul::handleMUCMessage( gloox::MUCRoom *room
 
     std::string upper = toUpper( msg.body() );
 
-    for( std::map< std::string, Modul* >::iterator i = loadedModules.begin(); i != loadedModules.end(); ++i )
+    for( std::map< std::string, Modul* >::iterator i = loadedModules.begin()
+	     ; i != loadedModules.end(); ++i )
 	for( int curWord = 0, length = numberOfWords( upper ); curWord < length; ++curWord )
 	    if( i->second->IsHaveMode( getWord( upper, curWord ) ) ){
 		i->second->Message( room, msg.body(), upper, msg.from(), priv );
@@ -204,26 +210,35 @@ bool MUCModul::Message( gloox::MUCRoom* room
 void MUCModul::handleMUCParticipantPresence( gloox::MUCRoom *room
 					, const gloox::MUCRoomParticipant participant
 					,  const gloox::Presence& presence ){
-    if( qModul ){
-	const std::string nick = participant.nick->full();
-	if( presence.presence() == gloox::Presence::Unavailable ){
-	    qModul->DeleteUser( nick );
-	    if( inRoom.find( nick ) != inRoom.end() )
-		inRoom.erase( inRoom.find( nick ) );
-	} else {
-	    if( inRoom.find( nick ) == inRoom.end()
-		&& presence.presence() != gloox::Presence::Unavailable
-		&& participant.affiliation == gloox::AffiliationNone ){
-		version.first->query( nick, 0 );
-		version.second.push( room );
-		room->send( participant.nick->resource() + " : ты хто ? " );
-	    }
-	    if( inRoom.find( nick ) == inRoom.end() )
-	    inRoom.insert( nick );
-	    qModul->AddUser( nick );
-	}
-    }
+    std::map< std::string, Modul* >::iterator idleIt = loadedModules.find( "IDLE" );
+    const bool haveIdleModul( idleIt != loadedModules.end() );
+    IdleModul *idle = 0;
+    if( haveIdleModul )
+	idle = static_cast< IdleModul* >( &( *idleIt->second ) );
 
+    const std::string nick = participant.nick->full();
+    if( presence.presence() == gloox::Presence::Unavailable ){
+	if( qModul )
+	    qModul->DeleteUser( nick );
+	if( inRoom.find( nick ) != inRoom.end() )
+	    inRoom.erase( inRoom.find( nick ) );
+	if( haveIdleModul )
+	    idle->RemoveUser( nick );
+    } else {
+	if( inRoom.find( nick ) == inRoom.end()
+	    && presence.presence() != gloox::Presence::Unavailable
+	    && participant.affiliation == gloox::AffiliationNone ){
+	    version.first->query( nick, 0 );
+	    version.second.push( room );
+	    room->send( participant.nick->resource() + " : ты хто ? " );
+	}
+	if( inRoom.find( nick ) == inRoom.end() )
+	    inRoom.insert( nick );
+	if( qModul )
+	    qModul->AddUser( nick );
+	if( haveIdleModul )
+	    idle->RegisterUser( nick );
+    }
 }
 
 void MUCModul::HandleVersion( const Version::version &v, int context ){
@@ -260,7 +275,7 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 
     const std::string FILE = ( numberOfWords( loadString ) > 1 ) ? getWord( loadString, 1 ) : "";
 
-    const int   MODULES_LENGTH = 10;
+    const int   MODULES_LENGTH = 11;
     std::string modules[ MODULES_LENGTH ]      = { "LOG"
 						   , "QUASTIONS"
 						   , "INFO"
@@ -270,6 +285,7 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 						   , "PARSER"
 						   , "CALC"
 						   , "REPO"
+						   , "IDLE"
 						   , "MUCROOM"
                                                  };
     bool isHave = 0;
@@ -277,8 +293,7 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 	if( MODUL == modules[i] ){
 	    switch( i ){
 	    case 0:
-		log = new LogModul( client );
-		loadedModules.insert( std::make_pair( modules[i], log ) );
+		loadedModules.insert( std::make_pair( modules[i], new LogModul( client ) ) );
 		break;
 	    case 1:
 		if( FILE.empty() )
@@ -290,15 +305,18 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 		loadedModules.insert( std::make_pair( modules[i], new InfoModul( client ) ) );
 		break;
 	    case 3:
-		loadedModules.insert( std::make_pair( modules[i], new AdminModul( client, *roots ) ) );
+		loadedModules.insert( std::make_pair( modules[i]
+						      , new AdminModul( client, *roots ) ) );
 		break;
 	    case 4:
 		if( FILE.empty() )
 		    return 0;
-		loadedModules.insert( std::make_pair( modules[i], new BadModul( client, FILE ) ) );
+		loadedModules.insert( std::make_pair( modules[i]
+						      , new BadModul( client, FILE ) ) );
 		break;
 	    case 5:
-		loadedModules.insert( std::make_pair( modules[i], new QuizModul( client, *roots ) ) );
+		loadedModules.insert( std::make_pair( modules[i]
+						      , new QuizModul( client, *roots ) ) );
 		break;
 	    case 6:
 		loadedModules.insert( std::make_pair( modules[i], new ParseModul( client ) ) );
@@ -311,6 +329,10 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 						      , new RepositoryModul( client, FILE ) ) );
 		break;
 	    case 9:
+		loadedModules.insert( std::make_pair( modules[i]
+						      , new IdleModul( client, inRoom ) ) );
+		break;
+	    case 10:
 		loadedModules.insert( std::make_pair( modules[i], this ) );
 		break;
 	    }
@@ -326,8 +348,6 @@ bool MUCModul::UnLoadModul( const std::string &mode ){
 	loadedModules.erase( mod );
 	if( mode == "QUASTIONS" )
 	    qModul = 0;
-	else if( mode == "LOG" )
-	    log = 0;
 	return 1;
     } else
 	return 0;

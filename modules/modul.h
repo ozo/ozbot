@@ -32,7 +32,7 @@ public:
     virtual std::string              GetModeInfo( const std::string &mode );
     virtual std::list< std::string > GetModes() const;
 
-    inline bool IsHaveMode( const std::string &mode ) const {
+    virtual bool IsHaveMode( const std::string &mode ) const {
 	return ( modes.find( mode ) != modes.end() ); 
     }
 protected:

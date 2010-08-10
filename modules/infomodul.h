@@ -7,8 +7,6 @@
 #include <gloox/vcardmanager.h>
 #include <gloox/vcardhandler.h>
 #include <gloox/eventhandler.h>
-#include <gloox/lastactivityhandler.h>
-#include <gloox/lastactivity.h>
 
 #include <queue>
 #include <sys/time.h>
@@ -21,7 +19,6 @@ namespace gloox{
 class InfoModul : public Modul
 		, gloox::VCardHandler
 		, gloox::EventHandler
-		, gloox::LastActivityHandler
 		, Version::VersionHandler {
 public:
                         InfoModul( gloox::Client *cl );
@@ -37,10 +34,6 @@ protected:
 				    , const gloox::JID& jid
 				    , gloox::StanzaError se  );
     virtual        void handleEvent( const gloox::Event  &event);
-    virtual        void handleLastActivityResult (const gloox::JID &jid
-					   , long int seconds
-					   , const std::string &status );
-    inline virtual void handleLastActivityError (const gloox::JID &jid, gloox::StanzaError error);
     inline         void GetVcard( const std::string &user );
     inline         void GetError();
                    void HandleVersion(const Version::version &v, int context );
@@ -57,7 +50,6 @@ private:
     std::queue< timeval > pingTimes;
 
     Version             version;
-    gloox::LastActivity la;
     void Send( std::string msg );
 
 };
@@ -65,10 +57,6 @@ private:
 void InfoModul::handleVCardResult( gloox::VCardHandler::VCardContext context
 				   , const gloox::JID& jid
 				   , gloox::StanzaError se  ){
-    GetError();
-}
-
-void InfoModul::handleLastActivityError(const gloox::JID &jid, gloox::StanzaError error){
     GetError();
 }
 

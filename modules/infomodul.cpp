@@ -9,9 +9,7 @@
 InfoModul::InfoModul( gloox::Client *cl )
     : Modul( cl )
     , vcardMng( cl )
-    , version( cl )
-    , la( cl ){
-    la.registerLastActivityHandler( this );
+    , version( cl ){
     version.RegisterVersionHandler( this );
     AddMode( "!VCARD",  "Вывести в чат конференции vcard пользователя : !vcard username" );
     AddMode( "!CLIENT", "Вывести в чат конференции клиент пользователя : !client username" );
@@ -60,10 +58,6 @@ bool InfoModul::Message( gloox::MUCRoom *room
 	GetVcard( user );
     else if( FIRST_WORD == "!CLIENT" )
 	version.query( user, 1 );
-    else {
-	la.resetIdleTimer();
-	la.query( user );
-    }
     
     return 1;
 }
@@ -122,21 +116,6 @@ void InfoModul::Send( std::string msg ){
     if( !requests.empty() )
 	requests.pop();
 
-}
-
-void InfoModul::handleLastActivityResult(const gloox::JID &jid
-					 , long int seconds
-					 , const std::string &status ){
-    std::string msg = "Пользователь был активен : ";
-    std::stringstream buffer;
-    buffer << seconds;
-    std::string secondsString;
-    buffer >> secondsString;
-    if( !seconds )
-	msg += secondsString + " сукунд назад.";
-    else
-	msg += secondsString + " секунд(ы) назад.";
-    Send( msg );
 }
 
 void InfoModul::HandleVersion(const Version::version &v, int context ){

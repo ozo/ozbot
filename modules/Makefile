@@ -2,7 +2,7 @@ CFLAGS = -Wall -O2
 
 all: modules helpfiles
 
-modules : calcmodul.o parsemodul.o quizmodul.o quastionmodul.o infomodul.o adminmodul.o logmodul.o badmodul.o mucmodul.o modul.o repositorymodul.o
+modules : calcmodul.o parsemodul.o quizmodul.o quastionmodul.o infomodul.o adminmodul.o logmodul.o badmodul.o mucmodul.o modul.o repositorymodul.o idlemodul.o
 
 helpfiles : version.o
 
@@ -38,6 +38,9 @@ badmodul.o : badmodul.cpp badmodul.h
 
 logmodul.o : logmodul.cpp logmodul.h
 	g++ $(CFLAGS) -c logmodul.cpp
+
+idlemodul.o : idlemodul.cpp idlemodul.h
+	g++ $(CFLAGS) -c idlemodul.cpp
 
 mucmodul.o : mucmodul.cpp mucmodul.h
 	g++ $(CFLAGS) -c mucmodul.cpp
