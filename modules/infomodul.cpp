@@ -106,15 +106,14 @@ void InfoModul::handleEvent( const gloox::Event &event){
 
 void InfoModul::Send( std::string msg ){
     if( requests.empty() )
-	msg = "Ошибка : неправильная обработка запросов";
+	return;
 
     Modul::Send( requests.front().room
 		 , requests.front().from
 		 , msg
 		 , requests.front().priv );
 
-    if( !requests.empty() )
-	requests.pop();
+    requests.pop();
 
 }
 

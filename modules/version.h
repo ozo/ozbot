@@ -6,6 +6,7 @@
 
 #include <list>
 #include <queue>
+#include <ctime>
 
 namespace gloox{
     class JID;
@@ -48,14 +49,14 @@ public:
     void                               RegisterVersionHandler( VersionHandler *vh );
     void                               RemoveVersionHandler( VersionHandler *vh );
 protected:
-    virtual bool                       handleIq( const gloox::IQ& iq ){ return 0; }
+    virtual bool                       handleIq( const gloox::IQ& iq );
     virtual void                       handleIqID( const gloox::IQ &iq, int context );
     void                               SendToHandlers( const version &v, const int context );
     void                               SendErrorToHandlers();
     gloox::Client                      *client;
     std::list< VersionHandler* >       handlers;
 private:
-    std::queue< gloox::JID >           jids;
+    std::pair< gloox::JID, std::time_t > *curJID;
 };
 
 #endif

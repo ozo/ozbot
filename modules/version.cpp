@@ -5,12 +5,14 @@
 #include <gloox/tag.h>
 
 #include <algorithm>
+#include <unistd.h>
 
 Version::Query::Query( const gloox::Tag* tag )
     : StanzaExtension( 100 ){
     if( !tag ){
 	return;
     }
+
     if( tag->xml().find( "<name>" ) != std::string::npos ){
 	v.client = tag->xml();
 	v.client.erase( 0, v.client.find( "<name>" ) + 6 );
@@ -58,7 +60,8 @@ gloox::StanzaExtension* Version::Query::clone() const {
 }
 
 Version::Version( gloox::Client* cl )
-    : client( cl ){
+    : client( cl )
+    , curJID( 0 ){
     if( client ){
 	client->registerStanzaExtension( new Query() );
 	client->registerIqHandler( this, 100 );
@@ -72,12 +75,22 @@ Version::~Version(){
 	client->removeIqHandler( this, 100 );
 	client->removeIDHandler( this );
     }
+    delete curJID;
 }
 
 void Version::query( const gloox::JID& jid, const int context ){
+    const int sleepLimit = 2;
     gloox::IQ iq( gloox::IQ::Get, jid, client->getID() );
     iq.addExtension( new Query() );
-    jids.push( jid );
+    if( !curJID ){
+	curJID = new std::pair< gloox::JID, std::time_t >( jid, std::time( 0 ) );
+    } else {
+	sleep( sleepLimit );
+	if( curJID )
+	    SendErrorToHandlers();
+	delete curJID;
+	curJID = new std::pair< gloox::JID, std::time_t >( jid, std::time( 0 ) );
+    }
     client->send( iq, this, context );
 }
 
@@ -93,18 +106,24 @@ void Version::RemoveVersionHandler( Version::VersionHandler *vh){
 	handlers.erase( handler );
 }
 
+bool Version::handleIq( const gloox::IQ& iq ){ 
+    return 0;
+}
+
 void Version::handleIqID( const gloox::IQ &iq, int context ){
     gloox::JID jid;
 
-    if( !jids.empty() ){
-	jid = jids.front();
-	jids.pop();
+    if( !curJID ){
+	SendErrorToHandlers();
+	return;
     }
 
     const Query *q = iq.findExtension< Query >( 100 );
     if( q ){
 	version v = q->Result();
-	v.jid = jid;
+	v.jid = curJID->first;
+	delete curJID;
+	curJID = 0;
 	SendToHandlers( v, context );
     } else 
 	SendErrorToHandlers();

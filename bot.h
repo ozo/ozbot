@@ -21,8 +21,10 @@ public:
 	  , const std::list< std::string > &mucJids
 	  , const std::list< std::string > &rootJid
 	  , const std::list< std::string > &mods )
-	: pingPongRequestTime( 0 )
+	: thread( 0 )
+	, pingPongRequestTime( 0 )
 	, badConnection( 0 )
+	, j( 0 )
 	, jid( jid_ )
 	, password( pswd )
 	, mucModul( 0 ){
@@ -39,7 +41,8 @@ public:
     }
     
     ~Bot(){
-	pthread_detach( thread );
+	if( thread )
+	    pthread_detach( thread );
 	j->removeConnectionListener( this );
 	delete mucModul;
 	delete j;

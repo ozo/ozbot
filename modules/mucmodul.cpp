@@ -13,8 +13,6 @@
 #include "aliasmodul.h"
 
 #include <algorithm>
-#include <cstring>
-#include <list>
 
 #include <gloox/client.h>
 #include <gloox/mucroom.h>
@@ -81,19 +79,37 @@ void MUCModul::handleMUCMessage( gloox::MUCRoom *room
 
     std::string body = msg.body();
     std::map< std::string, Modul* >::iterator aliasit = loadedModules.find( "ALIAS" );
+    AliasModul *aliasModul = 0;
     if( aliasit != loadedModules.end() ){
-	AliasModul *aliasModul = static_cast< AliasModul* >( &(*aliasit->second ) );
+	aliasModul = static_cast< AliasModul* >( &(*aliasit->second ) );
+	loadedModules.erase( aliasit );
+	if( aliasModul->IsHaveMode( toUpper( getWord( body, 0 ) ) ) )
+	    aliasModul->Message( room, body, toUpper( body ), msg.from(), priv );
 	aliasModul->ReplaceAliases( msg.from(), body );
     }
     std::string upper = toUpper( body );
 
+    bool aliasModulWasUnload = 0;
     for( std::map< std::string, Modul* >::iterator i = loadedModules.begin()
-	     ; i != loadedModules.end(); ++i )
+	     ; i != loadedModules.end(); ++i ){
+	if( i->first == "MUCROOM" && aliasModul )
+	    loadedModules.insert( std::make_pair( "ALIAS", aliasModul ) );
+
 	for( int curWord = 0, length = numberOfWords( upper ); curWord < length; ++curWord )
 	    if( i->second->IsHaveMode( getWord( upper, curWord ) ) ){
 		i->second->Message( room, body, upper, msg.from(), priv );
 		break;
 	    }
+
+	if( i->first == "MUCROOM" && aliasModul ){
+	    aliasModulWasUnload = ( loadedModules.find( "ALIAS" ) == loadedModules.end() );
+	    if( !aliasModulWasUnload )
+		loadedModules.erase( loadedModules.find( "ALIAS" ) );
+	}
+    }
+
+    if( aliasModul && !aliasModulWasUnload )
+	loadedModules.insert( std::make_pair( "ALIAS", aliasModul ) );
 }
 
 bool MUCModul::Message( gloox::MUCRoom* room
