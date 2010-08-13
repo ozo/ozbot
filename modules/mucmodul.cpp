@@ -22,7 +22,8 @@ MUCModul::MUCModul( gloox::Client *cl
 		    , const std::list< std::string > &rootsJid
 		    , const std::list< std::string > &mucJids
 		    , const std::list< std::string > &defModules )
-    : RootModul( cl, rootsJid ){
+    : RootModul( cl, rootsJid )
+    , init( 1 ){
     version.first = new Version( client );
     version.first->RegisterVersionHandler( this );
 
@@ -64,6 +65,8 @@ MUCModul::~MUCModul(){
 void MUCModul::handleMUCMessage( gloox::MUCRoom *room
 			    , const gloox::Message& msg
 			    , bool priv ){
+    init = msg.when();
+
     if( msg.body().length() > 1000 )
 	return;
 
@@ -252,8 +255,10 @@ void MUCModul::handleMUCParticipantPresence( gloox::MUCRoom *room
     } else {
 	if( inRoom.find( nick ) == inRoom.end()
 	    && participant.affiliation == gloox::AffiliationNone ){
-	    version.first->query( nick, 0 );
-	    version.second.push( room );
+	    if( !init ){
+		version.first->query( nick, 0 );
+		version.second.push( room );
+	    }
 	    room->send( participant.nick->resource() + " : ты хто ? " );
 	}
 	if( inRoom.find( nick ) == inRoom.end() )

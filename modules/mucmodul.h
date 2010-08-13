@@ -61,10 +61,11 @@ protected:
     bool UnLoadModul( const std::string &mode );
     void Clear( gloox::MUCRoom *room );
 
+    bool                                                 init;
     std::pair< Version*, std::queue< gloox::MUCRoom* > > version;
-    std::list< gloox::MUCRoom* >    rooms;
-    std::map< std::string, Modul* > loadedModules;
-    std::set< std::string >         inRoom;
+    std::list< gloox::MUCRoom* >                         rooms;
+    std::map< std::string, Modul* >                      loadedModules;
+    std::set< std::string >                              inRoom;
 };
 
 #endif

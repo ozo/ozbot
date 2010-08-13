@@ -94,7 +94,7 @@ int main(){
 	Bot *bot = 0;
 	for( ;; ){
 	    bot = new Bot( jid, pswd, mucJids, roots, modes );
-	    bot->start();
+	    bot->Start();
 	    const bool isError = bot->ConnectionError();
 	    delete bot;
 	    if( !isError )
