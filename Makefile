@@ -1,4 +1,4 @@
-CFLAGS = -Wall -O2
+CFLAGS = -Wall -O3
 
 all: other
 	g++ -o bot *.o modules/*.o -lgloox -lcurl -lpthread -lgmp -lgmpxx
