@@ -166,12 +166,18 @@ bool MUCModul::Message( gloox::MUCRoom* room
 				     ; mode != tmp.end(); ++mode )
 				helpMsg += *mode + ' ';
 			}
+			helpMsg += "\nПолучить помощь по команде : !help команда";
 		    } else {
 			for( std::map< std::string, Modul* >::const_iterator i = loadedModules.begin()
 				 ;i != loadedModules.end(); ++i )
-			    if( i->first != "BAD" )
-				if( i->second->IsHaveMode( getWord( upper, 1 ) ) )
-				    helpMsg = i->second->GetModeInfo( getWord( upper, 1 ) );
+			    if( i->first != "BAD" 
+				&& i->second->IsHaveMode( getWord( upper, 1 ) )
+				&& !i->second->GetModeInfo( getWord( upper, 1 ) ).empty() ){
+				bool helpMsgWasEmpty = helpMsg.empty();
+				if( helpMsgWasEmpty )
+				    helpMsg += '\n';
+				helpMsg = i->second->GetModeInfo( getWord( upper, 1 ) );
+			    }
 		    }
 		    if( !helpMsg.empty() )
 			Send( room, from, helpMsg, priv );
@@ -364,7 +370,7 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 		break;
 	    case 10:
 		loadedModules.insert( std::make_pair( modules[i]
-						      , new AliasModul( client ) ) );
+						      , new AliasModul( client, FILE ) ) );
 		break;
 	    case 11:
 		loadedModules.insert( std::make_pair( modules[i], this ) );

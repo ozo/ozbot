@@ -3,7 +3,7 @@
 #include <gloox/client.h>
 #include <gloox/mucroom.h>
 
-#include <sstream>
+#include <boost/lexical_cast.hpp>
 
 IdleModul::IdleModul( gloox::Client *cl, const std::set< std::string > &users )
     : Modul( cl ){
@@ -43,17 +43,15 @@ bool IdleModul::Message( gloox::MUCRoom* room
 	LowLength( room, from, priv );
 	return 0;
     } else {
-	std::stringstream stream;
-	stream << ( std::time( 0 ) - lastActivityTimes.find( fullNick )->second );
-	std::string tmp;
-	stream >> tmp;
-	msg += tmp + " сек. назад";
+	msg += boost::lexical_cast< std::string >( std::time( 0 ) 
+					    - lastActivityTimes.find( fullNick )->second 
+					    ) + " сек. назад";
 	Send( room, from, msg, priv );
 	return 1;
     }
 }
 
-bool IdleModul::IsHaveMode( const std::string& ){
+bool IdleModul::IsHaveMode( const std::string& ) const {
     return 1;
 }
 

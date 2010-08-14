@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <cctype>
 
+#include <boost/lexical_cast.hpp>
+
 std::ostream &operator << (std::ostream &stream, const CalcModul::Digit &from ){
     const std::string SPOINT = ".";
     const char        CPOINT = '.';
@@ -112,7 +114,7 @@ CalcModul::Digit CalcModul::GetDigit( std::string &str ) const {
 		str.erase( 0, 1 );
 	    } else  
 		break;
-    return lexical_cast< Digit >( tmp );
+    return boost::lexical_cast< Digit >( tmp );
 }
 
 void CalcModul::MakeOperation( Digits &digits
@@ -172,7 +174,7 @@ std::string CalcModul::Calculate( std::string str ) const
     if( digits.size() > 1 )
 	throw ParseError();
     else
-	return lexical_cast< std::string >( *digits.begin() );
+	return boost::lexical_cast< std::string >( *digits.begin() );
 }
 
 std::string CalcModul::Answer( std::string str ){

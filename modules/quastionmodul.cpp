@@ -84,6 +84,7 @@ bool QuastionModul::Message( gloox::MUCRoom* room
 			} else {
 			    i->SetAnswer( msg );
 			}
+			WriteQuastions();
 		    } else {
 			Send( from, "вопрос не вам", "answer" );
 		    }

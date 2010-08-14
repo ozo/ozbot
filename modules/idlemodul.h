@@ -17,7 +17,7 @@ public:
 			  , const std::string &upper
 			  , const gloox::JID &from
 			  ,  bool priv );
-    virtual bool IsHaveMode( const std::string& );
+    virtual bool IsHaveMode( const std::string& ) const;
     void         RegisterUser( std::string user );
     void         RemoveUser(   std::string user );
 protected:

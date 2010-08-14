@@ -3,12 +3,17 @@
 
 #include <gloox/mucroom.h>
 
-AliasModul::AliasModul( gloox::Client *cl )
-    : Modul( cl ){
+AliasModul::AliasModul( gloox::Client *cl, const std::string &fileName )
+    : FileModul( cl, fileName ){
     AddMode( "!ALIAS", "Создать синоним выражения : !alias синоним выражение, "
 	     "чувствительно к регистру" );
-    AddMode( "!ALIASLS", "Волучить список синонимов для себя : !aliasls" );
+    AddMode( "!ALIASLS", "Получить список синонимов для себя : !aliasls" );
+    AddMode( "!ALIASGL", "Получить список глобальных синонимов : !aliasgl" ); 
     AddMode( "!ALIASRM", "Удалить синоним : !aliasrm синоним" );
+    EraseComments();
+    for( StringList::iterator i = content.begin(); i != content.end(); ++i )
+	if( numberOfWords( *i ) > 1 )
+	    globalAlias.insert( std::make_pair( getWord( *i, 0 ), getWordsFrom( *i, 1 ) ) );
 }
 
 bool AliasModul::Message( gloox::MUCRoom* room
@@ -21,8 +26,8 @@ bool AliasModul::Message( gloox::MUCRoom* room
     if( !IsHaveMode( FIRST_WORD ) )
 	return 0;
 
-    const int         MODES_NUMBER = 3;
-    const std::string modes[ MODES_NUMBER ] = { "!ALIAS", "!ALIASLS", "!ALIASRM" };
+    const int         MODES_NUMBER = 4;
+    const std::string modes[ MODES_NUMBER ] = { "!ALIAS", "!ALIASLS", "!ALIASGL", "!ALIASRM" };
     for( int i = 0; i < MODES_NUMBER; ++i )
 	if( modes[ i ] == FIRST_WORD )
 	    switch( i ){
@@ -50,7 +55,7 @@ bool AliasModul::Message( gloox::MUCRoom* room
 		break;
 	    case 1 :
 		{
-		    std::string msg = "Для вас заданы синонимы :";
+		    std::string msg = "Для вас определены синонимы :";
 		    if( jidsAlias.find( from.full() ) != jidsAlias.end() ){
 			const Aliases &aliasMap = jidsAlias.find( from.full() )->second;
 			for( Aliases::const_iterator i = aliasMap.begin()
@@ -61,7 +66,16 @@ bool AliasModul::Message( gloox::MUCRoom* room
 		    Send( room, from, msg, priv );
 		}
 		break;
-	    case 2 :
+	    case 2:
+		{ 
+		    std::string msg = "Определены следующие глобальные синонимы :";
+		    for( Aliases::const_iterator i = globalAlias.begin()
+			     ; i != globalAlias.end(); ++i )
+			msg += '\n' + i->first + " : " + i->second;
+		    Send( room, from, msg, priv );
+		}
+		break;
+	    case 3 :
 		{
 		    if( numberOfWords( upper ) < 2 ){
 			LowLength( room, from, priv );
@@ -88,9 +102,15 @@ bool AliasModul::Message( gloox::MUCRoom* room
 }
 
 void AliasModul::ReplaceAliases( const gloox::JID &jid, std::string &str ) const {
+    for( Aliases::const_iterator i = globalAlias.begin()
+	     ; i != globalAlias.end(); ++i )
+	if( str.find( i->first ) != std::string::npos )
+	    str.replace( str.find( i->first ), i->first.length(), i->second );
+
     if( jidsAlias.find( jid.full() ) == jidsAlias.end() )
 	return;
-    const Aliases &aliasMap = jidsAlias.find( jid.full() )->second;
+
+    Aliases aliasMap = jidsAlias.find( jid.full() )->second;
     for( Aliases::const_iterator i = aliasMap.begin()
 	     ; i != aliasMap.end(); ++i )
 	if( str.find( i->first ) != std::string::npos )

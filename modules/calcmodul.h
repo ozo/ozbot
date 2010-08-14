@@ -1,7 +1,6 @@
 #ifndef CALCMODUL_H
 #define CALCMODUL_H
 
-#include <sstream>
 #include <iterator>
 #include <vector>
 #include <functional>
@@ -122,15 +121,6 @@ public:
 					 , tokens->end()
                                          , FindStringInPairs( token ) );
 	return ( it != tokens->end() );
-    }
-
-    template< typename TO, typename FROM >
-    TO lexical_cast( FROM &from ) const {
-	std::stringstream sstream;
-	sstream << from;
-	TO tmp;
-	sstream >> tmp;
-	return tmp;
     }
 
     void     AddToken( const std::string &token, const std::string &value );
