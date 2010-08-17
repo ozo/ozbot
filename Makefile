@@ -3,7 +3,7 @@ CFLAGS = -Wall -O3
 all: other
 	g++ -o bot *.o modules/*.o -lgloox -lcurl -lpthread -lgmp -lgmpxx
 
-other : analyzemsg.o messageloger.o quastion.o quiz.o test.o bot.o main.o
+other : analyzemsg.o messageloger.o quastion.o quizgame.o testgame.o bot.o main.o
 
 analyzemsg.o : analyzemsg.cpp analyzemsg.h
 	g++ $(CFLAGS) -c analyzemsg.cpp
@@ -14,11 +14,11 @@ messageloger.o : messageloger.cpp messageloger.h
 quastion.o : quastion.cpp quastion.h
 	g++ $(CFLAGS) -c quastion.cpp
 
-quiz.o : quiz.cpp quiz.h
-	g++ $(CFLAGS) -c quiz.cpp
+quizgame.o : quizgame.cpp quizgame.h
+	g++ $(CFLAGS) -c quizgame.cpp
 
-test.o : test.cpp test.h
-	g++ $(CFLAGS) -c test.cpp
+testgame.o : testgame.cpp testgame.h
+	g++ $(CFLAGS) -c testgame.cpp
 
 bot.o : bot.cpp bot.h
 	g++ $(CFLAGS) -c bot.cpp

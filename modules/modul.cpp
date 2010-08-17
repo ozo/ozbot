@@ -35,10 +35,14 @@ void Modul::Send( gloox::MUCRoom *room
 	       , const std::string &msg
 		  , bool priv ) const {
     const std::string::size_type MAX_MUC_MSG_LENGTH = 150;
-    if( priv || msg.length() > MAX_MUC_MSG_LENGTH )
+    if( priv )
 	Send( to, msg );
     else
-	room->send( to.resource() + ": " + msg );
+	if( msg.length(  ) > MAX_MUC_MSG_LENGTH ){
+	    Send( room, to, "Сообщение отправлено в личку", priv );
+	    Send( to, msg );
+	}else
+	    room->send( to.resource() + ": " + msg );
 }
 
 void Modul::LowLength( gloox::MUCRoom *muc

@@ -1,4 +1,4 @@
-#include "quizmodul.h"
+#include "gamemodul.h"
 
 #include "../analyzemsg.h"
 
@@ -7,7 +7,7 @@
 #include <gloox/client.h>
 #include <gloox/mucroom.h>
 
-QuizModul::QuizModul( gloox::Client *cl, std::list< std::string > &rootsJids )
+GameModul::GameModul( gloox::Client *cl, std::list< std::string > &rootsJids )
     : RootModul( cl, rootsJids )
     , games( 0 ){
     AddMode( "!GAME", "Запуск теста/викторины : !game start filе.test/file.quiz\n" 
@@ -16,7 +16,7 @@ QuizModul::QuizModul( gloox::Client *cl, std::list< std::string > &rootsJids )
 	              "Остановка игры : !game stop");
 }
 
-QuizModul::~QuizModul(){
+GameModul::~GameModul(){
     if( games )
 	for( std::map< gloox::MUCRoom*, Game* >::iterator i = games->begin()
 		 ; i != games->end()
@@ -25,7 +25,7 @@ QuizModul::~QuizModul(){
     delete games;
 }
 
-bool QuizModul::Message( gloox::MUCRoom* room
+bool GameModul::Message( gloox::MUCRoom* room
 			, const std::string &normal
 			, const std::string &upper
 			, const gloox::JID &from
@@ -97,7 +97,7 @@ bool QuizModul::Message( gloox::MUCRoom* room
   
 }
 
-void QuizModul::Start( gloox::MUCRoom *room
+void GameModul::Start( gloox::MUCRoom *room
 		       , const std::string &file
 		       , const gloox::JID &from
 		       , bool priv){
@@ -106,24 +106,22 @@ void QuizModul::Start( gloox::MUCRoom *room
 	Send( room, from, "В данной конференции уже запущена игра", priv );
 	return;
     }
-
     if( IsGoodFile( file ) ){
 	if( !games )
 	    games = new std::map< gloox::MUCRoom*, Game* >;
 	if( file.find( ".quiz" ) == std::string::npos )
-	    cur = new Test( file );
+	    cur = new TestGame( file );
 	else
-	    cur = new Quiz( file );
-
+	    cur = new QuizGame( file );
+	
 	games->insert( std::make_pair( room, cur ) );
 	AddModesFromString( cur->GetAnswers() );
 	room->send( cur->GetQuastion() );
-    } else
-	Send( room, from, "Неправильный файл", priv );
+    }
 }
 
 
-void QuizModul::Stop( gloox::MUCRoom *room, const gloox::JID &from, bool priv ){
+void GameModul::Stop( gloox::MUCRoom *room, const gloox::JID &from, bool priv ){
     std::string msg;
     if( IsHaveGame( room ) ){
 	std::map< gloox::MUCRoom*, Game* >::iterator game = games->find( room );
@@ -141,7 +139,7 @@ void QuizModul::Stop( gloox::MUCRoom *room, const gloox::JID &from, bool priv ){
 }
 
 
-void QuizModul::Stat( gloox::MUCRoom *room, const gloox::JID &from, bool priv ){
+void GameModul::Stat( gloox::MUCRoom *room, const gloox::JID &from, bool priv ){
     Game *cur = IsHaveGame( room );
     std::string msg;
     if( cur )
@@ -152,7 +150,7 @@ void QuizModul::Stat( gloox::MUCRoom *room, const gloox::JID &from, bool priv ){
 }
 
 
-void QuizModul::Cur( gloox::MUCRoom *room, const gloox::JID &from, bool priv ){
+void GameModul::Cur( gloox::MUCRoom *room, const gloox::JID &from, bool priv ){
     Game *cur = IsHaveGame( room );
     std::string msg;
     if( cur )
@@ -162,7 +160,7 @@ void QuizModul::Cur( gloox::MUCRoom *room, const gloox::JID &from, bool priv ){
     Send( room, from, msg, priv );
 }
 
-bool QuizModul::IsGoodFile( const std::string &file) const {
+bool GameModul::IsGoodFile( const std::string &file) const {
     if( file.find(".quiz") == std::string::npos && file.find(".test") == std::string::npos )
 	throw FileModul::FileNotFound();
 
@@ -175,12 +173,12 @@ bool QuizModul::IsGoodFile( const std::string &file) const {
     return isHave;
 }
 
-void QuizModul::DeleteModesFromString( const std::string &modes ){
+void GameModul::DeleteModesFromString( const std::string &modes ){
     for( int i = 0, length = numberOfWords( modes ); i < length; ++i )
 	DeleteMode( getWord( modes, i ) );
 }
 
-void QuizModul::AddModesFromString( const std::string &modes ){
+void GameModul::AddModesFromString( const std::string &modes ){
     for( int i = 0, length = numberOfWords( modes ); i < length; ++i )
 	AddMode( getWord( modes, i ) );
 }

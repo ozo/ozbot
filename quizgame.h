@@ -1,29 +1,23 @@
-#ifndef TEST_H
-#define TEST_H
+#ifndef QUIZGAME_H
+#define QUIZGAME_H
 
 #include "game.h"
 
 #include <string>
-#include <list>
 #include <map>
 
-class Test : public Game {
+class QuizGame : public Game{
 public:
-    Test( const std::string &filename );
-    ~Test();
-
+    QuizGame( const std::string &filename );
+    virtual ~QuizGame(){
+    }
     virtual bool        IsAnswer( const std::string &answer ) const;
     virtual std::string GetAnswers() const;
     virtual std::string GetQuastion() const;
     virtual void        NextQuastion( const std::string &user /* = "" */, const int points );
-
 protected:
-    struct Quastion{
-	std::string quastion;
-	std::list< std::string > answers;
-    };
-    std::list< Quastion > *quastions;
-    std::list< Quastion >::iterator cur;
+    std::map< const std::string, std::string> quastions;
+    std::map< const std::string, std::string>::iterator quastion;
 };
 
 #endif

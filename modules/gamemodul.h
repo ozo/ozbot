@@ -1,19 +1,19 @@
-#ifndef QUIZMODUL_H
-#define QUIZMODUL_H
+#ifndef GAMEMODUL_H
+#define GAMEMODUL_H
 
 #include "modul.h"
 #include "../game.h"
-#include "../quiz.h"
-#include "../test.h"
+#include "../quizgame.h"
+#include "../testgame.h"
 
 #include <list>
 #include <map>
 #include <algorithm>
 
-class QuizModul : public RootModul{
+class GameModul : public RootModul{
 public:
-    QuizModul( gloox::Client *cl, std::list< std::string > &roots);
-    virtual ~QuizModul();
+    GameModul( gloox::Client *cl, std::list< std::string > &roots);
+    virtual ~GameModul();
     virtual bool Message( gloox::MUCRoom* room
 			  , const std::string &normal
 			  , const std::string &upper
@@ -25,7 +25,7 @@ public:
 	return modes.find( mode )->second;
     }
 protected:
-    QuizModul( const QuizModul &from );
+    GameModul( const GameModul &from );
     inline Game* IsHaveGame( gloox::MUCRoom *room) const;
     bool         IsGoodFile( const std::string &file ) const;
     inline void  DeleteMode( const std::string &mode );
@@ -43,14 +43,14 @@ protected:
     std::map< gloox::MUCRoom*, Game* > *games;
 };
 
-Game* QuizModul::IsHaveGame( gloox::MUCRoom *room ) const {
+Game* GameModul::IsHaveGame( gloox::MUCRoom *room ) const {
     if( !games )
 	return 0;
     
     return ( ( games->find( room ) != games->end() ) ? games->find( room )->second : 0 );
 }
 
-void QuizModul::DeleteMode( const std::string &mode ){
+void GameModul::DeleteMode( const std::string &mode ){
     if( modes.find( mode ) != modes.end() )
 	modes.erase( modes.find( mode ) );
 } 

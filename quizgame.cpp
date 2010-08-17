@@ -1,8 +1,8 @@
-#include "quiz.h"
+#include "quizgame.h"
 
 #include <fstream>
 
-Quiz::Quiz(const std::string &filename ){
+QuizGame::QuizGame(const std::string &filename ){
     std::string tmpQuastion, tmpAnswer;
     std::ifstream in( filename.c_str() );
     while( std::getline( in, tmpQuastion ) ){
@@ -18,19 +18,19 @@ Quiz::Quiz(const std::string &filename ){
     quastion = quastions.begin();
 }
 
-bool Quiz::IsAnswer( const std::string &answer ) const {
+bool QuizGame::IsAnswer( const std::string &answer ) const {
     return ( quastion->second == answer );
 }
 
-std::string Quiz::GetAnswers() const {
+std::string QuizGame::GetAnswers() const {
    return quastion->second;
 }
 
-std::string Quiz::GetQuastion() const {
+std::string QuizGame::GetQuastion() const {
     return quastion->first;
 }
 
-void Quiz::NextQuastion( const std::string &user = "", const int points = 1 ){
+void QuizGame::NextQuastion( const std::string &user = "", const int points = 1 ){
     if( !user.empty() )
 	AddPoints( user, points );
     quastion++;

@@ -3,7 +3,7 @@
 #include "infomodul.h"
 #include "adminmodul.h"
 #include "badmodul.h"
-#include "quizmodul.h"
+#include "gamemodul.h"
 #include "parsemodul.h"
 #include "calcmodul.h"
 #include "repositorymodul.h"
@@ -317,7 +317,7 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 						   , "INFO"
 						   , "ADMIN"
 						   , "BAD"
-						   , "QUIZ"
+						   , "GAME"
 						   , "PARSER"
 						   , "CALC"
 						   , "REPO"
@@ -353,7 +353,7 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 		break;
 	    case 5:
 		loadedModules.insert( std::make_pair( modules[i]
-						      , new QuizModul( client, *roots ) ) );
+						      , new GameModul( client, *roots ) ) );
 		break;
 	    case 6:
 		loadedModules.insert( std::make_pair( modules[i], new ParseModul( client ) ) );
