@@ -1,4 +1,5 @@
 #include "idlemodul.h"
+#include "../analyzemsg.h"
 
 #include <gloox/client.h>
 #include <gloox/mucroom.h>

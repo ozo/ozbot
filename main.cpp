@@ -4,6 +4,9 @@
 #include <algorithm>
 
 #include "bot.h"
+#include "loger.h"
+
+#include <unistd.h>
 
 int isHaveKeyWord( const std::string String, const std::string *keyWords, const int keyWordsLength ){
     for( int i = 0; i < keyWordsLength; ++i )
@@ -99,6 +102,8 @@ int main(){
 	    delete bot;
 	    if( !isError )
 		break;
+	    DEBUG << Loger::DEBUG << "Restart bot, bad connection";
+	    sleep( 60 );
 	}
     }
 }

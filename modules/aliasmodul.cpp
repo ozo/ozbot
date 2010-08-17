@@ -87,9 +87,11 @@ bool AliasModul::Message( gloox::MUCRoom* room
 			msg = "Вы не определили ни одного синонима";
 		    } else {
 			Aliases &aliasMap = jidsAlias.find( from.full() )->second;
-			if( aliasMap.find( alias ) != aliasMap.end() )
+			if( aliasMap.find( alias ) != aliasMap.end() ){
 			    aliasMap.erase( aliasMap.find( alias ) );
-			else
+			    if( aliasMap.empty( ) )
+				jidsAlias.erase( from.full( ) );
+			} else
 			    msg = "Вы не определили такого синонима";
 		    }
 		    Send( room, from, msg, priv );

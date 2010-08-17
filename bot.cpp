@@ -1,4 +1,5 @@
 #include "bot.h"
+#include "loger.h"
 
 #include <unistd.h>
 
@@ -14,6 +15,7 @@ Bot::Bot(  const std::string jid_
     , thread( 0 )
     , pingPongRequestTime( 0 )
     , badConnection( 0 ){
+    DEBUG << Loger::DEBUG << "BOT START";
     mucs = mucJids;
     roots = rootJid;
     modes = mods;
@@ -24,14 +26,24 @@ Bot::Bot(  const std::string jid_
     j->disco()->setVersion( "gloox ", gloox::GLOOX_VERSION, "ArchLinux" );
     j->disco()->setIdentity( "client", "KataJab" );
     j->setCompression( false );
+    DEBUG << Loger::DEBUG << "BOT END";
 }
 
 Bot::~Bot(){
-    if( thread )
+    DEBUG << Loger::DEBUG << "~BOT BEGIN";
+    if( thread ){
+	DEBUG << Loger::DEBUG << "~BOT PTHREAD_JOIN";
+	pthread_join( thread, 0 );
+	DEBUG << Loger::DEBUG << "~BOT PTHREAD_DETACH";
 	pthread_detach( thread );
+    }
+    DEBUG << Loger::DEBUG << "J->REMOVECONNECTIONLISTENER";
     j->removeConnectionListener( this );
+    DEBUG << Loger::DEBUG << "DELETE MUCMODUL";
     delete mucModul;
+    DEBUG << Loger::DEBUG << "DELETE J";
     delete j;
+    DEBUG << Loger::DEBUG << "~BOT END";
 }
 
 void Bot::Start(){
@@ -53,13 +65,14 @@ void *Bot::ThreadMetod( void *tmp ){
 }
 
 void Bot::Ping(){
+    const int DEADLINE_TIME = 10;
     while( 1 ){
 	sleep( 10 );
 	if( !pingPongRequestTime ){
 	    pingPongRequestTime = std::time( 0 );
 	    j->xmppPing( jid, this );
 	} else 
-	    if( ( std::time( 0 ) - pingPongRequestTime ) > 60 ){
+	    if( ( std::time( 0 ) - pingPongRequestTime ) > DEADLINE_TIME ){
 		badConnection = 1;
 		j->disconnect();
 		return;

@@ -34,7 +34,8 @@ void Modul::Send( gloox::MUCRoom *room
 	       , const gloox::JID &to
 	       , const std::string &msg
 		  , bool priv ) const {
-    if( priv )
+    const std::string::size_type MAX_MUC_MSG_LENGTH = 150;
+    if( priv || msg.length() > MAX_MUC_MSG_LENGTH )
 	Send( to, msg );
     else
 	room->send( to.resource() + ": " + msg );

@@ -61,7 +61,8 @@ gloox::StanzaExtension* Version::Query::clone() const {
 
 Version::Version( gloox::Client* cl )
     : client( cl )
-    , curJID( 0 ){
+    , curJID( 0 )
+    , quarysCount( 0 ){
     if( client ){
 	client->registerStanzaExtension( new Query() );
 	client->registerIqHandler( this, 100 );
@@ -87,10 +88,14 @@ void Version::query( const gloox::JID& jid, const int context ){
     } else {
 	sleep( sleepLimit );
 	if( curJID )
-	    SendErrorToHandlers();
+	    if( quarysCount > 0 ){
+		quarysCount--;
+		SendErrorToHandlers();
+	    }
 	delete curJID;
 	curJID = new std::pair< gloox::JID, std::time_t >( jid, std::time( 0 ) );
     }
+    quarysCount++;
     client->send( iq, this, context );
 }
 
@@ -113,6 +118,10 @@ bool Version::handleIq( const gloox::IQ& iq ){
 void Version::handleIqID( const gloox::IQ &iq, int context ){
     gloox::JID jid;
 
+    if( !quarysCount )
+	return;
+
+    quarysCount--;
     if( !curJID ){
 	SendErrorToHandlers();
 	return;

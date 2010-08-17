@@ -11,6 +11,7 @@
 #include "quastionmodul.h"
 #include "idlemodul.h"
 #include "aliasmodul.h"
+#include "../analyzemsg.h"
 
 #include <algorithm>
 
@@ -215,7 +216,7 @@ bool MUCModul::Message( gloox::MUCRoom* room
 	const std::string FILE  = ( MSG_LENGTH > 2 ) ?  getWord( normal, 2 )  : "";
 	try{
 	    std::string msg = "Модуль " + MODUL + " был удачно запущен";
-	    if( !LoadModul( MODUL + FILE ) )
+	    if( !LoadModul( MODUL + ' ' + FILE ) )
 		msg = "Модуль " + MODUL + " не был запущен";
 	    Send( room, from, msg, priv );
 	}catch( FileModul::FileNotFound ){

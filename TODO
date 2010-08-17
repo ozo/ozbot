@@ -1,7 +1,1 @@
-#1. Создать класс IdleModul, убрать !la из infomodul и всунуть !idle в LastActivityModul
-#	Реализация :
-#		   virtual mode IsHaveMode( const std::string ){ return 1 };
-#############DONE
-#2. Добавить AliasModul
-#############DONE
-3. Квесты, как в космических ренджерах
+1. Квесты, как в космических ренджерах

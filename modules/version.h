@@ -57,6 +57,7 @@ protected:
     std::list< VersionHandler* >       handlers;
 private:
     std::pair< gloox::JID, std::time_t > *curJID;
+    unsigned int                         quarysCount;
 };
 
 #endif

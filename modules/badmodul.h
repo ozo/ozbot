@@ -3,8 +3,6 @@
 
 #include "modul.h"
 
-#include "../analyzemsg.h"
-
 #include <map>
 
 class BadModul : public FileModul{

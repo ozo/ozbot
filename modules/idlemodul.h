@@ -2,7 +2,6 @@
 #define IDLEMODUL_H
 
 #include "modul.h"
-#include "../analyzemsg.h"
 
 #include <ctime>
 #include <set>

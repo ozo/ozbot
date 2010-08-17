@@ -16,22 +16,15 @@ public:
 			  , const gloox::JID &from
 			  ,  bool priv );
 protected:
-    enum ParseMode{
-	BOR, WEATHER, IBASH, LORQ, CALENDAR
-    };
-
     std::string GetDataFromUrl( const std::string &url ) const;
-
     std::string Bor( unsigned int howMany );
-
     std::string Weather( const std::string &city );
-
+    std::string Wiki( std::string quary );
     CURL*       curl;
 private:
     static  int         Writer( char *data, size_t size, size_t nmemb, std::string *buffer );
     mutable std::string buffer;
     char                errorBuffer[ CURL_ERROR_SIZE ];
-
     inline void Replace( std::string &str, const std::string &from, const std::string &to ); 
     inline void EraseWith( std::string &str, const std::string &to ); 
 

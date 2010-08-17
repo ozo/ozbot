@@ -13,7 +13,7 @@ InfoModul::InfoModul( gloox::Client *cl )
     version.RegisterVersionHandler( this );
     AddMode( "!VCARD",  "Вывести в чат конференции vcard пользователя : !vcard username" );
     AddMode( "!CLIENT", "Вывести в чат конференции клиент пользователя : !client username" );
-    AddMode( "!PING", "Получить ping от бота : !ping" );
+    AddMode( "!PING", "Получить ping от бота : !ping <username>" );
     AddMode( "!LA", "Получить время прошедшее после последней активности пользователя"
 	     " : !la username" );
     AddMode( "!OS", "Получить название ОС пользователя : !os username" );
@@ -38,7 +38,15 @@ bool InfoModul::Message( gloox::MUCRoom *room
 	struct timezone tz;
 	gettimeofday( &curTime, &tz );
 	pingTimes.push( curTime  );
-	client->xmppPing( from, this );
+	if(  MSG_LENGTH > 1 ){
+	    const std::string jid = room->name() 
+		+ '@' 
+		+ room->service( ) 
+		+ '/' 
+		+ getWordsFrom( normal, 1 );
+	    client->xmppPing( gloox::JID(  jid ), this );
+	} else
+	    client->xmppPing( from, this );
 	return 1;
     }
 
