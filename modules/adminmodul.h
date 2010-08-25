@@ -11,7 +11,7 @@
 class AdminModul : public RootModul{
 public:
     AdminModul( gloox::Client *cl, std::list< std::string > &rootJids);
-
+    virtual ~AdminModul( ){}
     virtual bool Message( gloox::MUCRoom* room
 			  , const std::string &normal
 			  , const std::string &upper

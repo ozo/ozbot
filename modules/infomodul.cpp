@@ -56,8 +56,8 @@ bool InfoModul::Message( gloox::MUCRoom *room
     }
     
     const std::string user = room->name() 
-	+ "@" + room->service() 
-	+ "/" + getWordsFrom( normal, 1 );
+	+ '@' + room->service() 
+	+ '/' + getWordsFrom( normal, 1 );
 
 
     if( FIRST_WORD == "!OS" )
@@ -105,8 +105,10 @@ void InfoModul::handleEvent( const gloox::Event &event){
 	    std::string time;
 	    buffer >> time;
 	    msg += time + " сек.";
-	} else if( event.eventType() == gloox::Event::PingError )
+	} else if( event.eventType() == gloox::Event::PingError ){
+	    pingTimes.pop( );
 	    msg = "Ошибка получения результата на !ping";
+	}
     } else
 	msg = "Ошибка : неправильная работа со временем";
     Send( msg );

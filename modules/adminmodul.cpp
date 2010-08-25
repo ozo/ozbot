@@ -8,7 +8,7 @@ AdminModul::AdminModul( gloox::Client *cl, std::list< std::string > &rootJids)
     : RootModul( cl, rootJids ){
     AddMode( "!KICK", "Выкинуть пользователя из конференции : !kick username" );
     AddMode( "!BAN", "Запретить входить пользователю в конференцию : !ban username" );
-    AddMode( "!SAY", "Отправить сообщение от имени бота : !msg <jid> текст сообщения" );
+    AddMode( "!SAY", "Отправить сообщение от имени бота : !say <jid> текст сообщения" );
     AddMode( "!SETROLE", "Установить роль пользователя в данной конференции : !setrole РОЛЬ username\n"
 	     "Доступные роли :\n"
 	     "NONE - без роли\n"

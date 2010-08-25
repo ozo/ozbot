@@ -11,6 +11,7 @@
 #include "quastionmodul.h"
 #include "idlemodul.h"
 #include "aliasmodul.h"
+#include "timemodul.h"
 #include "../analyzemsg.h"
 
 #include <algorithm>
@@ -311,7 +312,7 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 
     const std::string FILE = ( numberOfWords( loadString ) > 1 ) ? getWord( loadString, 1 ) : "";
 
-    const int   MODULES_LENGTH = 12;
+    const int   MODULES_LENGTH = 13;
     std::string modules[ MODULES_LENGTH ]      = { "LOG"
 						   , "QUASTIONS"
 						   , "INFO"
@@ -323,6 +324,7 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 						   , "REPO"
 						   , "IDLE"
 						   , "ALIAS"
+						   , "TIME"
 						   , "MUCROOM"
                                                  };
     bool isHave = 0;
@@ -373,7 +375,10 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 		loadedModules.insert( std::make_pair( modules[i]
 						      , new AliasModul( client, FILE ) ) );
 		break;
-	    case 11:
+	    case 11: 
+		loadedModules.insert( std::make_pair( modules[ i ], new TimeModul( client ) ) );
+		break;
+	    case 12:
 		loadedModules.insert( std::make_pair( modules[i], this ) );
 		break;
 	    }

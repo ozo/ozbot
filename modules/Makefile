@@ -1,13 +1,19 @@
-CFLAGS = -Wall -O3
+CFLAGS = -Wall -Os
 
 all: modules helpfiles
 
-modules : calcmodul.o parsemodul.o gamemodul.o quastionmodul.o infomodul.o adminmodul.o logmodul.o badmodul.o mucmodul.o modul.o repositorymodul.o idlemodul.o aliasmodul.o
+modules : calcmodul.o timemodul.o parsemodul.o gamemodul.o quastionmodul.o infomodul.o adminmodul.o logmodul.o badmodul.o mucmodul.o modul.o repositorymodul.o idlemodul.o aliasmodul.o
 
-helpfiles : version.o
+helpfiles : version.o timeiq.o
+
+timeiq.o : timeiq.cpp timeiq.h
+	g++ $(CFLAGS) -c timeiq.cpp
 
 version.o : version.cpp version.h
 	g++ $(CFLAGS) -c version.cpp
+
+timemodul.o : timemodul.cpp timemodul.h
+	g++ $(CFLAGS) -c timemodul.cpp
 
 repositorymodul.o : repositorymodul.cpp repositorymodul.h
 	g++ $(CFLAGS) -c repositorymodul.cpp

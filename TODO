@@ -1,1 +1,8 @@
-1. Квесты, как в космических ренджерах
+1. !time
+<iq type='get'
+    from='romeo@montague.net/orchard'
+    to='juliet@capulet.com/balcony'
+    id='time_1'>
+  <time xmlns='urn:xmpp:time'/>
+</iq>
+2. Квесты, как в космических ренджерах

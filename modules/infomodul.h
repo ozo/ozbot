@@ -36,8 +36,8 @@ protected:
     virtual        void handleEvent( const gloox::Event  &event);
     inline         void GetVcard( const std::string &user );
     inline         void GetError();
-                   void HandleVersion(const Version::version &v, int context );
-    inline         void HandleVersionError();
+    virtual        void HandleVersion(const Version::version &v, int context );
+    inline virtual void HandleVersionError();
     gloox::VCardManager vcardMng;
 
 private:

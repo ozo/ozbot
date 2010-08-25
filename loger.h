@@ -37,4 +37,4 @@ bool Loger::operator<<( const std::string &msg ){
     return returnValue;
 }
 
-static Loger DEBUG( std::cout, Loger::DEBUG );
+static Loger DEBUG( std::cout, Loger::ALL );
