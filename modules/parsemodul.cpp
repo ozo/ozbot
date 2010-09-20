@@ -176,20 +176,22 @@ std::string ParseModul::Weather( const std::string &city ){
     if( weather.empty() || temperature.empty() )
 	return "";
     
-    const int MAX_ID = 6;
-    const std::string id[] = {   "w_d_7"
+    const int MAX_ID = 7;
+    const std::string id[ MAX_ID ] = {   "w_d_7"
 				 , "w_d_10"
 				 , "w_d_6"
 				 , "w_d_11"
 				 , "w_d_8"
 				 , "w_d_9"
+				 , "w_d_1"
     };
-    const std::string weathers[] = { "ясно"
+    const std::string weathers[ MAX_ID ] = { "ясно"
 				     , "переменная облачность, небольшой дождь"
 				     , "переменная облачность"
 				     , "облачно, небольшой дождь"
 				     , "дождь, гроза"
 				     , "переменная облачность, дождь"
+				     , "дождь"
     };
     
     for( int i = 0; i < MAX_ID; ++i )

@@ -4,39 +4,85 @@
 #include <gloox/disco.h>
 #include <gloox/tag.h>
 
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <unistd.h>
 
-#include "../loger.h"
-
 const int TIME_QUERY_NUMBER = 110;
-static const std::string XMLNS_TIME = "jabber:iq:time";
+static const std::string XMLNS_TIME = "urn:xmpp:time";
 
 TimeIq::TimeQuery::TimeQuery( const gloox::Tag* tag )
     : StanzaExtension( TIME_QUERY_NUMBER ){
-    if( !tag )
-	return;
-    else {
-	const std::string DISPLAY_TAG = "<display>";
-	const std::string TZ_TAG      = "<tz>";
+    if( tag ){
+	const std::string UTC_TAG = "<utc>";
+	const std::string TZ_TAG  = "<tzo>";
 	std::string xml = tag->xml( );
-	std::string tz;
+
+	bool isMoreNull = 0;
+	std::string tzoHousesString;
+	std::string tzoMinutsString;
 	if( xml.find( TZ_TAG ) != std::string::npos ){
 	    xml.erase( 0, xml.find( TZ_TAG ) + TZ_TAG.length( ) );
-	    tz = xml.substr( 0, xml.find( "<" ) );
+	    tzoHousesString = xml.substr( 0, xml.find( ':' ) );
+	    isMoreNull = ( tzoHousesString[ 0 ] == '+' );
+	    if( isMoreNull || tzoHousesString[ 0 ] == '-' )
+		tzoHousesString.erase( 0, 1 );
+	    if( tzoHousesString[ 0 ] == '0' )
+		tzoHousesString.erase( 0, 1 );
+	    xml.erase( 0, xml.find( ':' ) + 1 );
+	    tzoMinutsString = xml.substr( 0, xml.find( '<' ) );
+	    if( tzoMinutsString[ 0 ] == '0' )
+		tzoMinutsString.erase( 0, 1 );
 	}
 
-	if( xml.find( DISPLAY_TAG ) != std::string::npos ){
-	    xml.erase( 0, xml.find( DISPLAY_TAG ) + DISPLAY_TAG.length(  ) );
-	    t.time = xml.substr( 0, xml.find( "<" ) );
+	int tzoHouses = 0;
+	int tzoMinuts = 0;
+	if( !tzoHousesString.empty( ) && !tzoMinutsString.empty( ) ){
+	    tzoHouses = boost::lexical_cast< int >( tzoHousesString );
+	    if( tzoMinutsString != "0" )
+		tzoMinuts = boost::lexical_cast< int >( tzoMinutsString );
 	}
-	if( t.time.find( tz ) != std::string::npos )
-	    t.time.erase( t.time.find( tz ), tz.length(  ) );
+	if( xml.find( UTC_TAG ) != std::string::npos ){
+	    xml.erase( 0, xml.find( UTC_TAG ) + UTC_TAG.length(  ) );
+	    xml.erase( 0, xml.find( 'T' ) + 1 );
+	    int houses = boost::lexical_cast< int >( xml.substr( 0, xml.find( ':'  ) ) );
+	    xml.erase( 0, xml.find( ':' ) + 1 );
+	    int minuts = boost::lexical_cast< int >( xml.substr( 0, xml.find( ':' ) ) );
+	    xml.erase( 0, xml.find( ':' ) + 1 );
+	    const std::string seconds = xml.substr( 0, xml.find( 'Z' ) );
+
+	    if( tzoHouses < 0 ){
+		minuts -= tzoMinuts;
+		if( minuts < 0 ){
+		    --houses;
+		    minuts += 60;
+		}
+	    } else {
+		minuts += tzoMinuts;
+		if( minuts > 60 ){
+		    ++houses;
+		    minuts -=60;
+		}
+	    }
+	    
+	    houses += tzoHouses;
+	    if( houses > 24 )
+		houses -= 24;
+	    else if( houses < 0 )
+		houses += 24;
+	    std::string h = boost::lexical_cast< std::string >( houses );
+	    std::string m = boost::lexical_cast< std::string >( minuts );
+	    if( h.length( ) == 1 )
+		h = '0' + h;
+	    if( m.length( ) == 1 )
+		m = '0' + m;
+	    t.time = h + ':' + m + ':' + seconds;
+	}
     }
 }
 
 const std::string &TimeIq::TimeQuery::filterString() const {
-    static const std::string filter = "/iq/query[@xmlns='" + XMLNS_TIME + "']";
+    static const std::string filter = "/iq/time[@xmlns='" + XMLNS_TIME + "']";
     return filter;
 }
 
@@ -45,10 +91,10 @@ gloox::StanzaExtension *TimeIq::TimeQuery::newInstance( const gloox::Tag* tag ) 
 }
 
 gloox::Tag* TimeIq::TimeQuery::tag() const {
-    gloox::Tag* t = new gloox::Tag( "query" );
+    gloox::Tag* t = new gloox::Tag( "time" );
     t->setXmlns( XMLNS_TIME );
     t->addAttribute( "time", this->t.time );
-    t->setCData( "timeQuery" );
+    t->setCData( "time" );
     return t;
 }
 

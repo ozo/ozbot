@@ -60,11 +60,15 @@ void Bot::onConnect(){
 }
 
 void *Bot::ThreadMetod( void *tmp ){
+    DEBUG << Loger::DEBUG << "THREAD METOD START";
     static_cast< Bot* >( tmp )->Ping();
+    DEBUG << Loger::DEBUG << "PTHREAD_EXIT( 0 )";
     pthread_exit( 0 );
+    DEBUG << Loger::DEBUG << "THREAD METOD END";
 }
 
 void Bot::Ping(){
+    DEBUG << Loger::DEBUG << "PING START";
     const int DEADLINE_TIME = 10;
     while( 1 ){
 	sleep( 10 );
@@ -75,11 +79,14 @@ void Bot::Ping(){
 	    if( ( std::time( 0 ) - pingPongRequestTime ) > DEADLINE_TIME ){
 		badConnection = 1;
 		j->disconnect();
+		DEBUG << Loger::DEBUG << "PING END";
 		return;
 	    }
     }
+    DEBUG << Loger::DEBUG << "PING FULL END";
 }
 
 void Bot::handleEvent( const gloox::Event  &event){
+    DEBUG << Loger::DEBUG << "HANDLE PING";
     pingPongRequestTime = 0;
 }

@@ -6,6 +6,7 @@
 #include <gloox/mucroomhandler.h>
 
 #include "version.h"
+#include "modulesfactory.h"
 
 #include <list>
 #include <set>

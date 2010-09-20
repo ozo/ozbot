@@ -4,7 +4,10 @@ all: modules helpfiles
 
 modules : calcmodul.o timemodul.o parsemodul.o gamemodul.o quastionmodul.o infomodul.o adminmodul.o logmodul.o badmodul.o mucmodul.o modul.o repositorymodul.o idlemodul.o aliasmodul.o
 
-helpfiles : version.o timeiq.o
+helpfiles : version.o timeiq.o modulesfactory.o
+
+modulesfactory.o : modulesfactory.cpp modulesfactory.h
+	g++ $(CFLAGS) -c modulesfactory.cpp
 
 timeiq.o : timeiq.cpp timeiq.h
 	g++ $(CFLAGS) -c timeiq.cpp
