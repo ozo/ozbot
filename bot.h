@@ -30,7 +30,6 @@ protected:
     std::string               jid;
     std::string               password;
     std::list< std::string >  mucs;
-    std::list< std::string >  roots;
     std::list< std::string >  modes;
     MUCModul                  *mucModul;
 private:

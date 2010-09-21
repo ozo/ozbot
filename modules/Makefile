@@ -2,9 +2,12 @@ CFLAGS = -Wall -Os
 
 all: modules helpfiles
 
-modules : calcmodul.o timemodul.o parsemodul.o gamemodul.o quastionmodul.o infomodul.o adminmodul.o logmodul.o badmodul.o mucmodul.o modul.o repositorymodul.o idlemodul.o aliasmodul.o
+modules : calcmodul.o timemodul.o parsemodul.o gamemodul.o quastionmodul.o infomodul.o adminmodul.o logmodul.o badmodul.o mucmodul.o modul.o repositorymodul.o aliasmodul.o
 
-helpfiles : version.o timeiq.o modulesfactory.o
+helpfiles : version.o timeiq.o modulesfactory.o mucmodulesfactory.o
+
+mucmodulesfactory.o : mucmodulesfactory.h mucmodulesfactory.cpp
+	g++ $(CFLAGS) -c mucmodulesfactory.cpp
 
 modulesfactory.o : modulesfactory.cpp modulesfactory.h
 	g++ $(CFLAGS) -c modulesfactory.cpp
@@ -50,9 +53,6 @@ badmodul.o : badmodul.cpp badmodul.h
 
 logmodul.o : logmodul.cpp logmodul.h
 	g++ $(CFLAGS) -c logmodul.cpp
-
-idlemodul.o : idlemodul.cpp idlemodul.h
-	g++ $(CFLAGS) -c idlemodul.cpp
 
 mucmodul.o : mucmodul.cpp mucmodul.h
 	g++ $(CFLAGS) -c mucmodul.cpp

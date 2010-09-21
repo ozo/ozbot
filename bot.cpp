@@ -1,5 +1,6 @@
 #include "bot.h"
 #include "loger.h"
+#include "modules/modul.h"
 
 #include <unistd.h>
 
@@ -17,7 +18,7 @@ Bot::Bot(  const std::string jid_
     , badConnection( 0 ){
     DEBUG << Loger::DEBUG << "BOT START";
     mucs = mucJids;
-    roots = rootJid;
+    RootModul::SetRoots( rootJid );
     modes = mods;
     j = new gloox::Client( jid, password );
     j->disableRoster(); 
@@ -31,6 +32,8 @@ Bot::Bot(  const std::string jid_
 
 Bot::~Bot(){
     DEBUG << Loger::DEBUG << "~BOT BEGIN";
+    DEBUG << Loger::DEBUG << "CLEAR ROOTS";
+    RootModul::ClearRoots( );
     if( thread ){
 	DEBUG << Loger::DEBUG << "~BOT PTHREAD_JOIN";
 	pthread_join( thread, 0 );
@@ -55,7 +58,7 @@ bool Bot::ConnectionError(){
 }
 
 void Bot::onConnect(){
-    mucModul = new MUCModul( j, roots, mucs, modes );
+    mucModul = new MUCModul( j, mucs, modes );
     pthread_create(&thread, NULL, Bot::ThreadMetod, static_cast< void* >( this) );
 }
 

@@ -55,24 +55,27 @@ public :
     typedef std::string         string;
     typedef std::list< string > RootList;
 
-    RootModul( gloox::Client *cl, const RootList &from );
+    RootModul( gloox::Client *cl );
     virtual ~RootModul(){
-	RemoveRoots( *roots );
     }
     inline bool IsRoot( const string &name ) const;
     void        NotPermissed( const gloox::JID &user, gloox::MUCRoom *room, const bool priv );
+    inline static void SetRoots( const RootList newRoots );
+    inline static void ClearRoots( );
 protected:
-    RootList     *roots;
-private  :
-
-    typedef std::list< std::pair< RootList, unsigned int > > Roots;
-    void                            InitRoots( const RootList &roots );
-    void                            RemoveRoots( const RootModul::RootList &roots );
-    static Roots                           rootsVersions;
+    static RootList roots;
 };
 
+void RootModul::SetRoots( const RootModul::RootList newRoots ){
+    roots = newRoots;
+}
+
+void RootModul::ClearRoots( ){
+    roots.erase( roots.begin( ), roots.end( ) );
+}
+
 bool RootModul::IsRoot( const RootModul::string &name ) const {
-    return std::find( roots->begin(), roots->end(), name ) != roots->end();
+    return std::find( roots.begin(), roots.end(), name ) != roots.end();
 }
 
 class FileModul : public Modul{

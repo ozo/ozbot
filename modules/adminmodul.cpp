@@ -4,8 +4,8 @@
 #include <gloox/mucroom.h>
 #include <gloox/client.h>
 
-AdminModul::AdminModul( gloox::Client *cl, std::list< std::string > &rootJids)
-    : RootModul( cl, rootJids ){
+AdminModul::AdminModul( gloox::Client *cl )
+    : RootModul( cl ){
     AddMode( "!KICK", "Выкинуть пользователя из конференции : !kick username" );
     AddMode( "!BAN", "Запретить входить пользователю в конференцию : !ban username" );
     AddMode( "!SAY", "Отправить сообщение от имени бота : !say <jid> текст сообщения" );

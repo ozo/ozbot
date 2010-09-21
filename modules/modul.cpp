@@ -54,16 +54,8 @@ void Modul::LowLength( gloox::MUCRoom *muc
     else
 	muc->send( from.resource() + ": " + msg );
 } 
-RootModul::RootModul( gloox::Client *cl, const RootList &from )
+RootModul::RootModul( gloox::Client *cl )
     : Modul( cl ){
-    InitRoots( from );
-    for( Roots::iterator i = rootsVersions.begin();
-	 i != rootsVersions.end(); ++i )
-	if( i->first == from ){
-	    RootList &tmp = i->first;
-	    roots = &tmp;
-	    break;
-	}
 }
 
 void RootModul::NotPermissed( const gloox::JID &user, gloox::MUCRoom *room, const bool priv ){
@@ -79,29 +71,7 @@ void RootModul::NotPermissed( const gloox::JID &user, gloox::MUCRoom *room, cons
 	room->send( user.resource() + ": " + msg );
 }
 
-void RootModul::InitRoots( const RootModul::RootList &roots ){
-    for( Roots::iterator i = rootsVersions.begin()
-	     ; i != rootsVersions.end(); ++i )
-	if( i->first == roots ){
-	    i->second += 1;
-	    return;
-	}
-    rootsVersions.push_back( std::make_pair( roots, 0 ) );
-}
-
-void RootModul::RemoveRoots( const RootModul::RootList &roots ){
-    for( Roots::iterator i = rootsVersions.begin()
-	     ; i != rootsVersions.end(); ++i )
-	if( i->first == roots ){
-	    if( !i->second )
-		rootsVersions.erase( i );
-	    else
-		i->second -= 1;
-	    break;
-	}
-}
-
-RootModul::Roots RootModul::rootsVersions;
+RootModul::RootList RootModul::roots;
 
 FileModul::FileModul( gloox::Client *cl, const FileModul::string &fileName )
     : Modul( cl ){

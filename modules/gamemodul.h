@@ -12,7 +12,7 @@
 
 class GameModul : public RootModul{
 public:
-    GameModul( gloox::Client *cl, std::list< std::string > &roots);
+    GameModul( gloox::Client *cl );
     virtual ~GameModul();
     virtual bool Message( gloox::MUCRoom* room
 			  , const std::string &normal

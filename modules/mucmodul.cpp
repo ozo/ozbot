@@ -1,17 +1,11 @@
 #include "mucmodul.h"
 
-#include "infomodul.h"
-#include "adminmodul.h"
-#include "badmodul.h"
-#include "gamemodul.h"
-#include "parsemodul.h"
-#include "calcmodul.h"
-#include "repositorymodul.h"
+#include "mucmodulesfactory.h"
 #include "logmodul.h"
 #include "quastionmodul.h"
-#include "idlemodul.h"
+//#include "idlemodul.h"
 #include "aliasmodul.h"
-#include "timemodul.h"
+
 #include "../analyzemsg.h"
 
 #include <algorithm>
@@ -21,11 +15,12 @@
 #include <gloox/message.h>
 
 MUCModul::MUCModul( gloox::Client *cl
-		    , const std::list< std::string > &rootsJid
 		    , const std::list< std::string > &mucJids
 		    , const std::list< std::string > &defModules )
-    : RootModul( cl, rootsJid )
+    : RootModul( cl )
     , init( 1 ){
+    MUCModulesFactory::GetFactory( )->SetClient( cl );
+
     version.first = new Version( client );
     version.first->RegisterVersionHandler( this );
 
@@ -37,7 +32,7 @@ MUCModul::MUCModul( gloox::Client *cl
 	rooms.push_back( tmp );
     }
     
-    LoadModul( "MUCROOM" );
+    loadedModules.insert( std::make_pair( "MUCROOM", this ) );
 
     for( std::list< std::string >::const_iterator i = defModules.begin()
 	     ; i != defModules.end(); ++i )
@@ -62,6 +57,7 @@ MUCModul::~MUCModul(){
 	delete *i;
     }
     delete version.first;
+    MUCModulesFactory::DestroyFactory( );
 }
 
 void MUCModul::handleMUCMessage( gloox::MUCRoom *room
@@ -242,11 +238,6 @@ bool MUCModul::Message( gloox::MUCRoom* room
 void MUCModul::handleMUCParticipantPresence( gloox::MUCRoom *room
 					, const gloox::MUCRoomParticipant participant
 					,  const gloox::Presence& presence ){
-    std::map< std::string, Modul* >::iterator idleIt = loadedModules.find( "IDLE" );
-    IdleModul *idle = 0;
-    if( idleIt != loadedModules.end() )
-	idle = static_cast< IdleModul* >( &( *idleIt->second ) );
-
     std::map< std::string, Modul* >::iterator qIt = loadedModules.find( "QUASTIONS" );
     QuastionModul *quastions = 0;
     if( qIt != loadedModules.end() )
@@ -258,8 +249,6 @@ void MUCModul::handleMUCParticipantPresence( gloox::MUCRoom *room
 	    quastions->DeleteUser( nick );
 	if( inRoom.find( nick ) != inRoom.end() )
 	    inRoom.erase( inRoom.find( nick ) );
-	if( idle )
-	    idle->RemoveUser( nick );
     } else {
 	if( inRoom.find( nick ) == inRoom.end()
 	    && participant.affiliation == gloox::AffiliationNone ){
@@ -273,8 +262,6 @@ void MUCModul::handleMUCParticipantPresence( gloox::MUCRoom *room
 	    inRoom.insert( nick );
 	if( quastions )
 	    quastions->AddUser( nick );
-	if( idle )
-	    idle->RegisterUser( nick );
     }
 }
 
@@ -309,82 +296,11 @@ bool MUCModul::LoadModul( const std::string &loadString ){
 
     if( loadedModules.find( MODUL ) != loadedModules.end() )
 	return 0;
-
-    const std::string FILE = ( numberOfWords( loadString ) > 1 ) ? getWord( loadString, 1 ) : "";
-
-    const int   MODULES_LENGTH = 13;
-    std::string modules[ MODULES_LENGTH ]      = { "LOG"
-						   , "QUASTIONS"
-						   , "INFO"
-						   , "ADMIN"
-						   , "BAD"
-						   , "GAME"
-						   , "PARSER"
-						   , "CALC"
-						   , "REPO"
-						   , "IDLE"
-						   , "ALIAS"
-						   , "TIME"
-						   , "MUCROOM"
-                                                 };
-    bool isHave = 0;
-    for( int i = 0; i < MODULES_LENGTH; ++i )
-	if( MODUL == modules[i] ){
-	    switch( i ){
-	    case 0:
-		loadedModules.insert( std::make_pair( modules[i], new LogModul( client ) ) );
-		break;
-	    case 1:
-		if( FILE.empty() )
-		    return 0;
-		loadedModules.insert( std::make_pair( modules[i]
-						      , new QuastionModul( client, FILE ) ) );
-		break;
-	    case 2:
-		loadedModules.insert( std::make_pair( modules[i], new InfoModul( client ) ) );
-		break;
-	    case 3:
-		loadedModules.insert( std::make_pair( modules[i]
-						      , new AdminModul( client, *roots ) ) );
-		break;
-	    case 4:
-		if( FILE.empty() )
-		    return 0;
-		loadedModules.insert( std::make_pair( modules[i]
-						      , new BadModul( client, FILE ) ) );
-		break;
-	    case 5:
-		loadedModules.insert( std::make_pair( modules[i]
-						      , new GameModul( client, *roots ) ) );
-		break;
-	    case 6:
-		loadedModules.insert( std::make_pair( modules[i], new ParseModul( client ) ) );
-		break;
-	    case 7:
-		loadedModules.insert( std::make_pair( modules[i], new CalcModul( client ) ) );
-		break;
-	    case 8:
-		loadedModules.insert( std::make_pair( modules[i]
-						      , new RepositoryModul( client, FILE ) ) );
-		break;
-	    case 9:
-		loadedModules.insert( std::make_pair( modules[i]
-						      , new IdleModul( client, inRoom ) ) );
-		break;
-	    case 10:
-		loadedModules.insert( std::make_pair( modules[i]
-						      , new AliasModul( client, FILE ) ) );
-		break;
-	    case 11: 
-		loadedModules.insert( std::make_pair( modules[ i ], new TimeModul( client ) ) );
-		break;
-	    case 12:
-		loadedModules.insert( std::make_pair( modules[i], this ) );
-		break;
-	    }
-	    isHave = 1;
-	}
-    return isHave;
+    
+    Modul *modul = MUCModulesFactory::GetFactory( )->InitModule( loadString );
+    if( modul )
+	loadedModules.insert( std::make_pair(  MODUL, modul ) );
+    return modul;
 }
 
 bool MUCModul::UnLoadModul( const std::string &mode ){

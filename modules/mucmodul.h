@@ -6,7 +6,6 @@
 #include <gloox/mucroomhandler.h>
 
 #include "version.h"
-#include "modulesfactory.h"
 
 #include <list>
 #include <set>
@@ -21,7 +20,6 @@ class MUCModul : public RootModul
 	       , Version::VersionHandler {
 public:
     MUCModul( gloox::Client *cl
-	      , const std::list< std::string > &rootsJid
 	      , const std::list< std::string > &mucJids
 	      , const std::list< std::string > &defModules );
     

@@ -7,8 +7,8 @@
 #include <gloox/client.h>
 #include <gloox/mucroom.h>
 
-GameModul::GameModul( gloox::Client *cl, std::list< std::string > &rootsJids )
-    : RootModul( cl, rootsJids )
+GameModul::GameModul( gloox::Client *cl )
+    : RootModul( cl )
     , games( 0 ){
     AddMode( "!GAME", "Запуск теста/викторины : !game start filе.test/file.quiz\n" 
 	              "Текущий вопрос : !game cur\n"
