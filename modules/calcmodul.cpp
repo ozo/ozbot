@@ -74,13 +74,12 @@ bool CalcModul::Message( gloox::MUCRoom* room
 }
 
 bool CalcModul::IsSystemChar( const char ch ) const {
-    const int GOOD_NUMBER = 4;
-    const char good[] = { '+', '-', '/', '*' };
-    bool isGood = 0;
-    for( int i = 0; i < GOOD_NUMBER; ++i )
-	if( ch == good[ i ] )
-	    isGood = 1;
-    return isGood;
+    const int CHARS_NUMBER = 4;
+    const char systemChars[] = { '+', '-', '/', '*' };
+    for( int i = 0; i < CHARS_NUMBER; ++i )
+	if( ch == systemChars[ i ] )
+	    return 1;
+    return 0;
 }
 
 CalcModul::charType CalcModul::GetCharType( const char ch ) const {
@@ -252,8 +251,8 @@ std::string CalcModul::Answer( std::string str ){
 	    rightBad = ( end || right != DIGIT );
 	    break;
 	case '-' :
-	    leftBad  = ( left != DIGIT && right != DIGIT );
-	    rightBad = end;
+	    leftBad  = ( left != DIGIT && left != RBRACKET );
+	    rightBad = ( end || ( right != DIGIT && right != LBRACKET ) );
 	    break;
 	case '+' :
 	case '/' :
@@ -307,6 +306,8 @@ std::string CalcModul::Answer( std::string str ){
 	expression = "42";
     } catch( ParseError ){
 	return "Ошибка анализа выражения";
+    } catch( boost::bad_lexical_cast ){
+	return "Ошибка форматирования( выявлена на этапе вычисления )";
     }
 
     if( token != "answer" )

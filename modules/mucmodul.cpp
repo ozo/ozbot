@@ -73,7 +73,7 @@ void MUCModul::handleMUCMessage( gloox::MUCRoom *room
     LogModul *log;
     log = static_cast< LogModul* >( &(*logIt->second ) );
     if( !priv && haveLog )
-    	log->AddToLog( room->name(), msg.from().resource(), msg.body() );
+    	log->AddToLog( room, msg.from(), msg.body() );
 
     if( msg.from().resource() == room->nick() || msg.body().empty() || msg.when() )
 	return;

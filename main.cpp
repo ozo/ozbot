@@ -1,23 +1,10 @@
-#include <iostream>
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <unistd.h>
 
 #include "bot.h"
 #include "loger.h"
-
-#include <unistd.h>
-
-int isHaveKeyWord( const std::string String, const std::string *keyWords, const int keyWordsLength ){
-    for( int i = 0; i < keyWordsLength; ++i )
-	if( keyWords[i] == String )
-	    return i + 1;
-    return 0;
-}
-
-inline bool isCommented( const  std::string &String ){
-    return ( String[0] == '#' );
-}
 
 void deleteComment( std::string &String ){
     std::string::size_type commentPos = String.find('#');
@@ -30,73 +17,72 @@ void deleteComment( std::string &String ){
 	String.clear();
 }
 
+inline bool IsHave( const std::list< std::string > &lst, const std::string &str ){
+    return ( std::find( lst.begin( ), lst.end( ), str ) != lst.end( ) );
+}
+
 int main(){
-    std::string jid, pswd, tmpString;
+    std::list< std::string > file;
+    std::ifstream config( "config" );
+    if( config ){
+	std::string tmp;
+	while( std::getline( config, tmp ) )
+	    file.push_back( tmp );
+    }
+    config.close( );
+    std::for_each( file.begin( ), file.end( ), deleteComment );
+    while( std::find( file.begin( ), file.end( ), "" ) != file.end( ) )
+	file.erase( std::find( file.begin( ), file.end( ), "" ) );
 
-    std::list< std::string > mucJids;
-    std::list< std::string > roots;
-    std::list< std::string > modes;
-
-    std::vector< std::string > file;
-    
-    std::ifstream config("config");
-    while( std::getline( config, tmpString ) )
-	file.push_back( tmpString );
-    config.close();
-    // delete comments
-    std::for_each( file.begin(), file.end(), deleteComment );
-    // delete empty strings
-    file.erase( std::remove( file.begin(), file.end(), "" ), file.end() );
-
-    const int KEY_WORDS_MAX = 5;
-    std::string keyWords[]  = { "JID:", "PSWD:", "MUCJID:", "ROOTS:", "MODES:" };
-
-    std::vector< std::string >::const_iterator current = file.begin();
-
-    for(; current != file.end() && current + 1 != file.end(); ++current )
-	if( isHaveKeyWord( *current, keyWords, KEY_WORDS_MAX ) ){
-	    switch( isHaveKeyWord( *current, keyWords, KEY_WORDS_MAX ) ){
-	    case 1:
-		++current;
-		jid = *current;
-		break;
-	    case 2:
-		++current;
-		pswd = *current;
-		break;
-	    case 3:
-		while( !isHaveKeyWord( *(current + 1), keyWords, KEY_WORDS_MAX ) 
-		       && current + 1 != file.end() ){
-		    ++current;
-		    mucJids.push_back( *current );
-		}
-		break;
-	    case 4:
-		while( !isHaveKeyWord( *(current + 1), keyWords, KEY_WORDS_MAX ) 
-		       && current + 1 != file.end() ){
-		    ++current;
-		    roots.push_back( *current );
-		}
-		break;
-	    case 5:
-		while( !isHaveKeyWord( *(current + 1), keyWords, KEY_WORDS_MAX ) 
-		       && current + 1 != file.end() ){
-		    ++current;
-		    modes.push_back( *current );
-		}
-		break;
-	    default: break;
+    std::list< std::string > keyWords;
+    keyWords.push_back( "JID:" );
+    keyWords.push_back( "PSWD:" );
+    keyWords.push_back( "MUCJID:" );
+    keyWords.push_back( "ROOTS:" );
+    keyWords.push_back( "MODES:" );
+    std::string jid, pswd;
+    std::list< std::string > MUCJids, roots, modes;
+    {
+	std::list< std::string >::iterator tmp;
+	for( std::list< std::string >::iterator i = file.begin( )
+		 ; i != file.end( ); ++i )
+	    if( ( tmp = std::find( keyWords.begin( ), keyWords.end( ), *i) ) != keyWords.end( ) ){
+		++i;
+		switch( std::distance( keyWords.begin( ), tmp ) ){
+		case 0 :
+		    if( i != file.end( ) && !IsHave( keyWords, *i ) ) 
+			jid = *i;
+		    break;
+		case 1 :
+		    if( i != file.end( ) && !IsHave( keyWords, *i ) )
+			pswd = *i;
+		    break;
+		case 2 :
+		    for(; i != file.end( ) && !IsHave( keyWords, *i ); ++i )
+			MUCJids.push_back( *i );
+		    break;
+		case 3 :
+		    for(; i != file.end( ) && !IsHave( keyWords, *i ); ++i )
+			roots.push_back( *i );
+		    break;
+		case 4 :
+		    for(; i != file.end( ) && !IsHave( keyWords, *i ); ++i )
+			modes.push_back( *i );
+		    break;
+		default :
+		    break;
+		    }
+		--i;
 	    }
-	}
-    file.clear();
-
+    }
+    file.clear( );
     if( jid.empty() || pswd.empty() || modes.empty() || roots.empty() )
 	DEBUG << Loger::DEBUG << "Неправильно оформлен конфигурационный файл\n"
 	    "Обратитесь к документации, запуск бота невозможен\n";
     else {
 	Bot *bot = 0;
 	for( ;; ){
-	    bot = new Bot( jid, pswd, mucJids, roots, modes );
+	    bot = new Bot( jid, pswd, MUCJids, roots, modes );
 	    bot->Start();
 	    const bool isError = bot->ConnectionError();
 	    delete bot;

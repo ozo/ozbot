@@ -5,21 +5,32 @@
 
 #include <list>
 #include <algorithm>
+#include <string>
 
-class MessageLoger;
+namespace gloox{
+    class MUCRoom;
+    class JID;
+}
 
 class LogModul : public Modul{
 public:
     LogModul( gloox::Client *cl );
-    virtual ~LogModul();
+    virtual ~LogModul(){}
     virtual bool Message( gloox::MUCRoom* room
 			  , const std::string &normal
 			  , const std::string &upper
 			  , const gloox::JID &from
-			  ,  bool priv );
-    void AddToLog( const std::string &resource, const std::string &from, const std::string &msg);
+			  , bool priv );
+    bool AddToLog( const gloox::MUCRoom *room, const gloox::JID &from, const std::string &msg );
 protected:
-    MessageLoger             *log;
+    std::string GetMessages( const int length
+			     , const std::string &resource ) const; 
+    struct message{
+	std::string resource;
+	std::string user;
+	std::string text;
+    };
+    std::list< message > log;
 };
 
 #endif

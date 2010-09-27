@@ -50,23 +50,22 @@ bool InfoModul::Message( gloox::MUCRoom *room
 	return 1;
     }
 
-    if( MSG_LENGTH < 2 ){
-	LowLength( room, from, priv );
-	return 0;
-    }
-    
-    const std::string user = room->name() 
-	+ '@' + room->service() 
-	+ '/' + getWordsFrom( normal, 1 );
-
+    std::string user;
+    if( MSG_LENGTH > 1 )
+	user = room->name() 
+	    + '@' + room->service() 
+	    + '/' + getWordsFrom( normal, 1 );
+    else
+	user = from.full( );
 
     if( FIRST_WORD == "!OS" )
-	version.query( user, 0 );
+	    version.query( user, 0 );
     else if( FIRST_WORD == "!VCARD" )
 	GetVcard( user );
     else if( FIRST_WORD == "!CLIENT" )
 	version.query( user, 1 );
-    
+    else
+	LowLength( room, from, priv );
     return 1;
 }
     
