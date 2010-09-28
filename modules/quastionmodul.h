@@ -4,8 +4,9 @@
 #include "modul.h"
 
 #include <list>
-
-class Quastion;
+#include <string>
+#include <istream>
+#include <ostream>
 
 class QuastionModul : public FileModul{
 public:
@@ -19,6 +20,14 @@ public:
     void AddUser( const std::string &userFull );
     void DeleteUser( const std::string &user );
 protected:
+    struct Quastion{
+	std::string from;
+	std::string to;
+	std::string quastion;
+	std::string answer;
+    };
+    bool ReadQuastion( std::istream &stream, Quastion &quastion );
+    void WriteQuastion( std::ostream &stream, const Quastion &quastion );
     void WriteQuastions();
     bool IsHaveUser( const std::string &user );
     std::list< Quastion >           qList;

@@ -138,7 +138,7 @@ bool MUCModul::Message( gloox::MUCRoom* room
 	    switch( i ){
 	    case 0:
 		if( IsRoot( from.full() ) )
-		    Clear( room ); 
+		    room->send( std::string( 100, '\n' ) );
 		else
 		    NotPermissed( from, room, priv );
 		break;
@@ -316,8 +316,3 @@ bool MUCModul::UnLoadModul( const std::string &mode ){
 	return 0;
 }
 
-void MUCModul::Clear( gloox::MUCRoom *room){
-    std::string mucMsg;
-    mucMsg.assign( 100, '\n' );
-    room->send(mucMsg);
-}

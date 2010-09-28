@@ -54,11 +54,8 @@ protected:
     virtual void HandleVersion( const Version::version &v, int context = 0);
     virtual void HandleVersionError();
 
-    void ReadQuastions();
-    void WriteQuastions();
     bool LoadModul( const std::string &loadString );
     bool UnLoadModul( const std::string &mode );
-    void Clear( gloox::MUCRoom *room );
 
     bool                                                 init;
     std::pair< Version*, std::queue< gloox::MUCRoom* > > version;

@@ -1,7 +1,6 @@
 #include "quastionmodul.h"
 
 #include "../analyzemsg.h"
-#include "../quastion.h"
 
 #include <fstream>
 #include <algorithm>
@@ -21,10 +20,9 @@ QuastionModul::QuastionModul( gloox::Client *cl, const std::string &quastionFile
 	     ; i != content.end(); ++i )
 	stream << *i << '\n';
 
-    while( !stream.eof() ){
+    if( !stream.eof( ) ){
 	Quastion tmp;
-	stream >> tmp;
-	if( !tmp.Empty() )
+	while( ReadQuastion( stream, tmp ) )
 	    qList.push_back( tmp );
     }
 
@@ -62,27 +60,27 @@ bool QuastionModul::Message( gloox::MUCRoom* room
 	    Send( room, fromJid, msg, priv );
 	    return 1;
 	}
-	for( std::list< Quastion >::iterator i = qList.begin(); i != qList.end(); )
-	    if( i->GetFrom() == from ){
-		qList.erase( i );
-		i = qList.begin();
-	    } else
-		++i;
-	qList.push_back( Quastion( msg, from, to ) );
+	for( std::list< Quastion >::iterator i = qList.begin(); i != qList.end(); ++i )
+	    if( i->from == from ){
+		i = qList.erase( i );
+		--i;
+	    }
+	Quastion tmp = { from, to, msg, "" };
+	qList.push_back( tmp );
 	WriteQuastions();
     } else 
 	if( FIRST_WORD == "!A" ){
 	    for( std::list< Quastion >::iterator i = qList.begin(); i != qList.end(); ++i )
-		if( i->GetFrom() == to ){
-		    if( i->GetTo() == from ){
+		if( i->from == to ){
+		    if( i->to == from ){
 			if( IsHaveUser( to ) ){
-			    std::string msg = "пользователь " + i->GetTo() 
-				+ " передал вам ответ : \" " + i->GetAnswer() + '\"';
+			    std::string msg = "пользователь " + i->to 
+				+ " передал вам ответ : \" " + i->answer + '\"';
 			    Send( to, msg, "answer" );
 			    qList.erase( i );
 			    break;
 			} else {
-			    i->SetAnswer( msg );
+			    i->answer = msg;
 			}
 			WriteQuastions();
 		    } else {
@@ -101,20 +99,20 @@ void QuastionModul::AddUser( const std::string &userFull ){
 	return;
 
     for( std::list< Quastion >::iterator i = qList.begin(); i != qList.end(); ++i )
-	if( i->GetTo() == userFull && i->GetAnswer() == "" ){
-	    std::string msg = "Пользователь " + i->GetFrom() + " передал вам сообщение : \"" + i->GetQuastion() + '\"';
+	if( i->to == userFull && i->answer.empty( ) ){
+	    std::string msg = "Пользователь " + i->from + " передал вам сообщение : \"" 
+		+ i->quastion + '\"';
 	    Send( userFull, msg, "quastion" );
 	}
-    for( std::list< Quastion >::iterator i = qList.begin(); i != qList.end(); )
-	if( i->GetFrom() == userFull && i->GetAnswer() != "" ){
-	    std::string msg = "Пользователь " + i->GetTo() + " передал вам ответ : \"" + i->GetAnswer() + '\"';
+    for( std::list< Quastion >::iterator i = qList.begin(); i != qList.end(); ++i )
+	if( i->from == userFull && !i->answer.empty( ) ){
+	    std::string msg = "Пользователь " + i->to + " передал вам ответ : \"" 
+		+ i->answer + '\"';
 	    Send( userFull, msg, "answer" );
-	    qList.erase( i );
-	    i = qList.begin();
+	    i = qList.erase( i );
 	    WriteQuastions();
-	} else
-	    ++i;
-
+	    --i;
+	}
 }
 
 void QuastionModul::DeleteUser( const std::string &user ){
@@ -126,11 +124,26 @@ bool QuastionModul::IsHaveUser( const std::string &user ){
     return ( std::find( users.begin(), users.end(), user ) != users.end() );
 }
 
+bool QuastionModul::ReadQuastion( std::istream &stream, Quastion &quastion ){
+    bool isGoodRead = ( std::getline( stream, quastion.quastion)
+			&& std::getline( stream, quastion.from)
+			&& std::getline( stream, quastion.to ) );
+    std::getline( stream, quastion.answer );
+    return isGoodRead;
+}
+ 
+void QuastionModul::WriteQuastion( std::ostream &stream, const Quastion &quastion ){
+    stream << quastion.quastion << '\n';
+    stream << quastion.from << '\n';
+    stream << quastion.to << '\n';
+    stream << quastion.answer << '\n';
+}
+
 void QuastionModul::WriteQuastions(){
     std::ofstream out( qFile.c_str() );
     if( out ){
 	for( std::list<Quastion>::const_iterator i = qList.begin(); i != qList.end(); ++i )
-	    out << *i;
+	    WriteQuastion( out, *i );
 	out.close();
     }
 }
