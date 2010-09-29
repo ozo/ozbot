@@ -5,12 +5,13 @@
 #include "analyzemsg.h"
 
 TestGame::TestGame( const std::string &filename ){
-    std::string str;
     std::list< std::string > file;
     std::ifstream in( filename.c_str() );
-    if( in )
-	while( std::getline( in, str ) )
-	    file.push_back( str );
+    if( in ){
+	std::string tmp;
+	while( std::getline( in, tmp ) )
+	    file.push_back( tmp );
+    }
     in.close();
 
     Quastion tmpQ;
@@ -46,12 +47,9 @@ bool TestGame::IsAnswer( const std::string &number ) const {
 
 std::string TestGame::GetAnswers() const {
     std::string result;
-    std::string tmp;
-    for( std::list< std::string >::iterator i = cur->answers.begin(); i != cur->answers.end(); ++i ){
-	tmp = toUpper( i->substr( 2 ) );
-	result +=  tmp + ' ';
-    }
-     return result;
+    for( std::list< std::string >::iterator i = cur->answers.begin(); i != cur->answers.end(); ++i )
+	result +=  toUpper( i->substr( 2 ) ) + ' ';
+    return result;
 }
 
 

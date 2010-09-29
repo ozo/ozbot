@@ -52,7 +52,8 @@ protected:
     }
 
     virtual void HandleVersion( const Version::version &v, int context = 0);
-    virtual void HandleVersionError();
+    virtual void HandleVersionError( Version::Error
+				     , const gloox::JID & );
 
     bool LoadModul( const std::string &loadString );
     bool UnLoadModul( const std::string &mode );

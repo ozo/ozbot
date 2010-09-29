@@ -286,7 +286,7 @@ void MUCModul::HandleVersion( const Version::version &v, int context ){
 	}
 }
 
-void MUCModul::HandleVersionError(){
+void MUCModul::HandleVersionError( Version::Error, const gloox::JID& ){
     if( !version.second.empty() )
 	version.second.pop();
 }

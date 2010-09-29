@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <unistd.h>
 
+#include "../loger.h"
+
 Version::Query::Query( const gloox::Tag* tag )
     : StanzaExtension( 100 ){
     if( !tag ){
@@ -62,7 +64,7 @@ gloox::StanzaExtension* Version::Query::clone() const {
 Version::Version( gloox::Client* cl )
     : client( cl )
     , curJID( 0 )
-    , quarysCount( 0 ){
+    , lock( 0 ){
     if( client ){
 	client->registerStanzaExtension( new Query() );
 	client->registerIqHandler( this, 100 );
@@ -80,22 +82,24 @@ Version::~Version(){
 }
 
 void Version::query( const gloox::JID& jid, const int context ){
-    const int sleepLimit = 2;
+    DEBUG << Loger::DEBUG << "Get quary";
+    const int sleepLimit = 5;
+    if( lock ){
+	if( curJID == 0 )
+	    lock = 0;
+	else if( time( 0 ) - curJID->second > sleepLimit ){
+	    SendErrorToHandlers( Version::NoAnswer, jid );
+	    ClearLock( );
+	} else {
+	    SendErrorToHandlers( Version::Busy, jid );
+	    return;
+	}
+    }
+    lock = 1;
     gloox::IQ iq( gloox::IQ::Get, jid, client->getID() );
     iq.addExtension( new Query() );
-    if( !curJID ){
-	curJID = new std::pair< gloox::JID, std::time_t >( jid, std::time( 0 ) );
-    } else {
-	sleep( sleepLimit );
-	if( curJID )
-	    if( quarysCount > 0 ){
-		quarysCount--;
-		SendErrorToHandlers();
-	    }
-	delete curJID;
-	curJID = new std::pair< gloox::JID, std::time_t >( jid, std::time( 0 ) );
-    }
-    quarysCount++;
+    curJID = new std::pair< gloox::JID, std::time_t >( jid, std::time( 0 ) );
+    DEBUG << Loger::DEBUG << "Send quary";
     client->send( iq, this, context );
 }
 
@@ -116,14 +120,10 @@ bool Version::handleIq( const gloox::IQ& iq ){
 }
 
 void Version::handleIqID( const gloox::IQ &iq, int context ){
-    gloox::JID jid;
-
-    if( !quarysCount )
-	return;
-
-    quarysCount--;
+    DEBUG << Loger::DEBUG << "HandleIqId";
     if( !curJID ){
-	SendErrorToHandlers();
+	//	SendErrorToHandlers( Version::NoAnswer, gloox::JID( ) );
+	lock = 0;
 	return;
     }
 
@@ -131,21 +131,30 @@ void Version::handleIqID( const gloox::IQ &iq, int context ){
     if( q ){
 	version v = q->Result();
 	v.jid = curJID->first;
-	delete curJID;
-	curJID = 0;
 	SendToHandlers( v, context );
-    } else 
-	SendErrorToHandlers();
+    } else
+	SendErrorToHandlers( Version::NoAnswer, curJID->first );
+    ClearLock( );
+    DEBUG << Loger::DEBUG << "End HandleIqId";
 }
 
 void Version::SendToHandlers( const Version::version &v, const int context ){
+    DEBUG << Loger::DEBUG << "SendToHandlers";
     for( std::list< Version::VersionHandler* >::iterator i = handlers.begin()
 	     ; i != handlers.end(); ++i )
 	(*i)->HandleVersion( v, context );
 }
 
-void Version::SendErrorToHandlers(){
+void Version::SendErrorToHandlers( Version::Error error, const gloox::JID &from ){
+    DEBUG << Loger::DEBUG << "SendErrorToHandlers";
     for( std::list< Version::VersionHandler* >::iterator i = handlers.begin()
 	     ; i != handlers.end(); ++i )
-	(*i)->HandleVersionError();
+	(*i)->HandleVersionError( error, from );
+}
+
+void Version::ClearLock( ){
+    DEBUG << Loger::DEBUG << "Clear lock";
+    delete curJID;
+    curJID = 0;
+    lock = 0;
 }

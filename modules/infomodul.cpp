@@ -5,6 +5,7 @@
 #include <gloox/client.h>
 
 #include <sstream>
+#include <algorithm>
 
 InfoModul::InfoModul( gloox::Client *cl )
     : Modul( cl )
@@ -14,14 +15,12 @@ InfoModul::InfoModul( gloox::Client *cl )
     AddMode( "!VCARD",  "Вывести в чат конференции vcard пользователя : !vcard username" );
     AddMode( "!CLIENT", "Вывести в чат конференции клиент пользователя : !client username" );
     AddMode( "!PING", "Получить ping от бота : !ping <username>" );
-    AddMode( "!LA", "Получить время прошедшее после последней активности пользователя"
-	     " : !la username" );
     AddMode( "!OS", "Получить название ОС пользователя : !os username" );
 }
 
 bool InfoModul::Message( gloox::MUCRoom *room
 		       , const std::string &normal
-		       , const std::string &upper
+ 		       , const std::string &upper
 		       , const gloox::JID &from
 		       , bool priv ){
     const std::string FIRST_WORD = getWord( upper, 0 );
@@ -31,9 +30,9 @@ bool InfoModul::Message( gloox::MUCRoom *room
 	return 0;
 
     Request newRequest = { room, priv, from };
-    requests.push( newRequest );
 
     if( FIRST_WORD == "!PING" ){
+	requests.push_back( newRequest );
 	struct timeval curTime;
 	struct timezone tz;
 	gettimeofday( &curTime, &tz );
@@ -58,14 +57,16 @@ bool InfoModul::Message( gloox::MUCRoom *room
     else
 	user = from.full( );
 
+    newRequest.to = user;
+    requests.push_back( newRequest );
     if( FIRST_WORD == "!OS" )
-	    version.query( user, 0 );
+	version.query( user, 0 );
     else if( FIRST_WORD == "!VCARD" )
 	GetVcard( user );
     else if( FIRST_WORD == "!CLIENT" )
 	version.query( user, 1 );
     else
-	LowLength( room, from, priv );
+	requests.pop_back( );
     return 1;
 }
     
@@ -113,17 +114,31 @@ void InfoModul::handleEvent( const gloox::Event &event){
     Send( msg );
 }
 
-void InfoModul::Send( std::string msg ){
+void InfoModul::Send( const std::string &msg ){
     if( requests.empty() )
 	return;
-
-    Modul::Send( requests.front().room
-		 , requests.front().from
+    std::list< Request >::iterator first = requests.begin( );
+    Modul::Send( first->room
+		 , first->from
 		 , msg
-		 , requests.front().priv );
+		 , first->priv );
 
-    requests.pop();
+    requests.erase( first );
 
+}
+
+void InfoModul::Send( const std::string &msg, const gloox::JID &to ){
+    if( !to ){
+	Send( msg );
+	return;
+    }
+    for( std::list< Request >::iterator i = requests.begin( ); i != requests.end( ); ++i )
+	if( i->to == to ){
+	    Modul::Send( i->room, i->from, msg, i->priv );
+	    requests.erase( i );
+	    return;
+	}
+    Send( msg );
 }
 
 void InfoModul::HandleVersion(const Version::version &v, int context ){
