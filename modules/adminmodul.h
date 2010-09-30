@@ -2,6 +2,7 @@
 #define ADMINMODUL_H
 
 #include "modul.h"
+#include "commandfactory.h"
 
 #include <list>
 #include <string>
@@ -19,19 +20,17 @@ public:
 			  , bool priv );
 
 protected:
-    void SetRole(gloox::MUCRoom *room, const std::string &role, const std::string &user );
-
-    void SetAff(gloox::MUCRoom *room, const std::string &aff, const std::string &user );
-
-    void Kick(gloox::MUCRoom *room, const std::string &user);
-
-    void Ban(gloox::MUCRoom *room, const std::string &user);
-    
-    void Say(gloox::MUCRoom *room, const std::string &msg);
-
+    bool SetRole(gloox::MUCRoom *room, const std::string &cmd );
+    bool SetAff(gloox::MUCRoom *room, const std::string &cmd );
+    bool SetSubject( gloox::MUCRoom *room, const std::string &cmd );
+    bool SetStatus( gloox::MUCRoom *room, const std::string &cmd );
+    bool Kick(gloox::MUCRoom *room, const std::string &user);
+    bool Ban(gloox::MUCRoom *room, const std::string &user);
+    bool Say(gloox::MUCRoom *room, const std::string &msg);
     gloox::Presence::PresenceType GetPresence( const std::string &from ) const;
     //    bool IsGoodRole( gloox::MUCRoom *room, const gloox::JID &from );
-
+private:
+    CommandFactory< AdminModul > commands;
 };
 
 #endif

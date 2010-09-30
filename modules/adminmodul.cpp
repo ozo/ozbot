@@ -6,15 +6,24 @@
 
 AdminModul::AdminModul( gloox::Client *cl )
     : RootModul( cl ){
+
     AddMode( "!KICK", "Выкинуть пользователя из конференции : !kick username" );
+    commands.AddCommand( "!KICK", &AdminModul::Kick );
+
     AddMode( "!BAN", "Запретить входить пользователю в конференцию : !ban username" );
+    commands.AddCommand( "!BAN", &AdminModul::Ban );
+
     AddMode( "!SAY", "Отправить сообщение от имени бота : !say <jid> текст сообщения" );
+    commands.AddCommand( "!SAY", &AdminModul::Say );
+
     AddMode( "!SETROLE", "Установить роль пользователя в данной конференции : !setrole РОЛЬ username\n"
 	     "Доступные роли :\n"
 	     "NONE - без роли\n"
 	     "GUEST - гость\n"
 	     "VISIROT - посетитель\n"
 	     "MODERATOR - модератор");
+    commands.AddCommand( "!SETROLE", &AdminModul::SetRole );
+
     AddMode( "!SETAFF", "Установить права пользователя в данной конференции : !setaff ПРАВА username\n"
 	     "Права :\n"
 	     "NONE - отсутствуют\n"
@@ -22,10 +31,15 @@ AdminModul::AdminModul( gloox::Client *cl )
 	     "MEMBER - член\n"
 	     "OWNER - владелец\n"
 	     "ADMIN - администратор");
+    commands.AddCommand( "!SETAFF", &AdminModul::SetAff );
+
     AddMode( "!SUBJECT", "Установить тему в конференции : !subject тема" );
+    commands.AddCommand( "!SUBJECT", &AdminModul::SetSubject );
+
     AddMode( "!STATUS", "Установить статус бота : !status тип статус\n"
 	     "Типы :\n"
 	     "online, chat, away, dnd, xa" );
+    commands.AddCommand( "!STATUS", &AdminModul::SetStatus );
 }
 
 bool AdminModul::Message( gloox::MUCRoom* room
@@ -36,9 +50,6 @@ bool AdminModul::Message( gloox::MUCRoom* room
 
     const int MSG_LENGTH = numberOfWords( normal );
 
-    if( !IsHaveMode( getWord( upper, 0 ) ) )
-	return 0;
-    
     if( !IsRoot( from.full() ) ){
 	NotPermissed( from, room, priv );
 	return 0;
@@ -49,65 +60,44 @@ bool AdminModul::Message( gloox::MUCRoom* room
 	return 0;
     }
 
-    const std::string firstWord    = getWord( upper, 0 );
+    const std::string commandName  = getWord( upper, 0 );
     const std::string cmd          = getWordsFrom( normal, 1 );
-    const int         MODES_NUMBER = 5;
-    const std::string modes[]      = { "!SAY", "!KICK", "!BAN", "!SUBJECT", "!STATUS" };
-    bool              isHave       = 0;
-    for( int i = 0; i < MODES_NUMBER; ++i )
-	if( modes[i] == firstWord ){
-	    switch( i ){
-	    case 0 :
-		Say(  room, cmd );
-		break;
-	    case 1 :
-		Kick( room, cmd );
-		break;
-	    case 2 :
-		Ban(  room, cmd );
-		break;
-	    case 3 :
-		room->setSubject( cmd );
-		break;
-	    case 4 :
-		if( GetPresence( getWord( upper, 1 ) ) != gloox::Presence::Error ){
-		    const std::string status = ( MSG_LENGTH > 2 ? getWordsFrom( normal, 2 ) : "" );
-		    room->setPresence( GetPresence( getWord( upper, 1 ) ),
-				       status );
-		}else 
-	            room->setPresence( gloox::Presence::Chat, cmd );
-		break;
-	    default : break;
-	    }
-	    isHave = 1;
+    if( commands.GetPtr( commandName ) )
+	if( !( this->*( commands.GetPtr( commandName ) ) )( room, cmd ) ){
+	    LowLength( room, from, priv );
+	    return 0;
 	}
-    if( isHave )
-	return 1;
-    
-    if( MSG_LENGTH < 3 ){
-	LowLength( room, from.resource(), priv );
-	return 0;
-    }
-
-    if( firstWord == "!SETROLE" )
-	SetRole( room, getWord( upper, 1 ), getWordsFrom( normal, 2 ) );
-    else if( firstWord == "!SETAFF" )
-	SetAff( room, getWord( upper, 1 ), getWordsFrom( normal, 2 ) );
     return 1;
 }
 
-void AdminModul::Ban(gloox::MUCRoom *room, const std::string &user){
+bool AdminModul::SetSubject( gloox::MUCRoom *room, const std::string &cmd ){
+    room->setSubject( cmd );
+    return 1;
+}
+
+bool AdminModul::SetStatus( gloox::MUCRoom *room, const std::string &cmd ){
+    if( GetPresence( getWord( toUpper( cmd ), 0 ) ) != gloox::Presence::Error ){
+	const std::string status = ( numberOfWords( cmd ) > 1 ? getWordsFrom( cmd, 1 ) : "" );
+	room->setPresence( GetPresence( getWord( toUpper( cmd ), 0 ) ), status );
+    } else
+	room->setPresence( gloox::Presence::Chat, cmd );
+    return 1;
+}
+
+bool AdminModul::Ban(gloox::MUCRoom *room, const std::string &user){
     room->ban(user, "Так велел мой повелитель :P");
+    return 1;
 }
 
-void AdminModul::Kick(gloox::MUCRoom *room, const std::string &user){
+bool AdminModul::Kick(gloox::MUCRoom *room, const std::string &user){
     room->kick( user );
+    return 1;
 }
 
-void AdminModul::Say(gloox::MUCRoom *room, const std::string &msg){
+bool AdminModul::Say(gloox::MUCRoom *room, const std::string &msg){
     if( numberOfWords( msg ) < 2 ){
 	room->send( msg );
-	return;
+	return 1;
     }
 
     std::string jid = getWord( msg, 0 );
@@ -118,11 +108,18 @@ void AdminModul::Say(gloox::MUCRoom *room, const std::string &msg){
 	room->send( msg );
     else
 	Send( gloox::JID( jid ), getWordsFrom( msg, 1 ) );
+    return 1;
 }
 
-void AdminModul::SetRole( gloox::MUCRoom *room, const std::string &role, const std::string &user ){
+bool AdminModul::SetRole( gloox::MUCRoom *room, const std::string &cmd ){
+    if( numberOfWords( cmd ) < 2 )
+	return 0;
+    const std::string role = getWord( toUpper( cmd ), 0 );
+    const std::string user = getWordsFrom( toUpper( cmd ), 1 );
+
     const int ROLES     = 4;
     std::string roles[] = { "NONE", "GUEST", "VISITOR", "MODERATOR" };
+    bool isHave = 0;
     for( int i = 0; i < ROLES; ++i )
 	if( role == roles[i] ){
 	    gloox::MUCRoomRole to = gloox::RoleNone;
@@ -133,13 +130,21 @@ void AdminModul::SetRole( gloox::MUCRoom *room, const std::string &role, const s
 	    case 3 : to = gloox::RoleModerator;   break;
 	    }
 	    room->setRole( user, to );
+	    isHave = 1;
 	    break;
 	}
+    return isHave;
 }
 
-void AdminModul::SetAff( gloox::MUCRoom *room, const std::string &aff, const std::string &user ){
+bool AdminModul::SetAff( gloox::MUCRoom *room, const std::string &cmd ){
+    if( numberOfWords( cmd ) < 2 )
+	return 0;
+    const std::string aff  = getWord( toUpper( cmd ), 0 );
+    const std::string user = getWordsFrom( toUpper( cmd ), 1 );
+
     const int AFFLES = 5;
     const std::string affles[] = { "NONE", "OUTCAST", "MEMBER", "OWNER", "ADMIN" };
+    bool isHave = 0;
     for( int i = 0; i < AFFLES; ++i )
 	if( aff == affles[i] ){
 	    gloox::MUCRoomAffiliation to = gloox::AffiliationNone;
@@ -151,8 +156,10 @@ void AdminModul::SetAff( gloox::MUCRoom *room, const std::string &aff, const std
 	    case 4 : to = gloox::AffiliationAdmin;   break;
 	    }
 	    room->setAffiliation( user, to, "Так было велено мне" );
+	    isHave = 1;
 	    break;
 	}
+    return isHave;
 }
 
 gloox::Presence::PresenceType AdminModul::GetPresence( const std::string &from ) const {

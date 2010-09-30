@@ -16,7 +16,7 @@ public:
     typedef Modul* ( *FactoryMetod )( const std::string&, gloox::Client* );
     // source is : "module_name parameter"
     ModulesFactory( ){}
-    ~ModulesFactory( ){}
+    virtual ~ModulesFactory( ){}
     inline void              SetClient( gloox::Client *cl );
     inline void              UnSetClient( );
     Modul*                   InitModule( const std::string& source );
