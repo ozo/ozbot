@@ -5,6 +5,11 @@
 #include <string>
 
 #include "modul.h"
+#include "commandfactory.h"
+
+namespace gloox{
+    class MUCRoom;
+}
 
 class ParseModul : public Modul{
 public:
@@ -16,10 +21,10 @@ public:
 			  , const gloox::JID &from
 			  ,  bool priv );
 protected:
-    std::string GetDataFromUrl( const std::string &url ) const;
-    std::string Bor( unsigned int howMany );
-    std::string Weather( const std::string &city );
-    std::string Wiki( std::string quary );
+    std::string GetDataFromUrl( gloox::MUCRoom*, const std::string &url );
+    std::string Bor( gloox::MUCRoom*, const std::string &number );
+    std::string Weather( gloox::MUCRoom*, const std::string &cmd );
+    std::string Wiki( gloox::MUCRoom*,const std::string &quaryString );
     CURL*       curl;
 private:
     static  int         Writer( char *data, size_t size, size_t nmemb, std::string *buffer );
@@ -29,6 +34,8 @@ private:
     inline void EraseWith( std::string &str, const std::string &to ); 
 
     std::map< std::string, std::string > *citys;
+    CommandFactory< ParseModul, std::string, const std::string& > commands;
+    std::map< std::string, std::string > values;
 };
     
 void ParseModul::Replace( std::string &str, const std::string &from, const std::string &to ){

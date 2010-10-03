@@ -20,7 +20,7 @@ AdminModul::AdminModul( gloox::Client *cl )
 	     "Доступные роли :\n"
 	     "NONE - без роли\n"
 	     "GUEST - гость\n"
-	     "VISIROT - посетитель\n"
+	     "VISITOR - посетитель\n"
 	     "MODERATOR - модератор");
     commands.AddCommand( "!SETROLE", &AdminModul::SetRole );
 
@@ -47,15 +47,12 @@ bool AdminModul::Message( gloox::MUCRoom* room
 			  , const std::string &upper
 			  , const gloox::JID &from
 			  ,  bool priv ){
-
-    const int MSG_LENGTH = numberOfWords( normal );
-
     if( !IsRoot( from.full() ) ){
 	NotPermissed( from, room, priv );
 	return 0;
     }
 
-    if( MSG_LENGTH < 2 ){
+    if( numberOfWords( normal ) < 2 ){
 	LowLength( room, from, priv );
 	return 0;
     }

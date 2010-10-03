@@ -2,6 +2,7 @@
 
 #include <map>
 #include <vector>
+#include <boost/lexical_cast.hpp>
 
 #include <gloox/client.h>
 #include <gloox/mucroom.h>
@@ -36,11 +37,29 @@ ParseModul::ParseModul( gloox::Client *cl )
     citys->insert( std::make_pair( "СЛУЦК",     "26951" ) );
     
     AddMode( "!BOR", "Получить 5 последних цитат с bash.org.ru, bash.org.by, ibash.org.ru : !bor" );
+    commands.AddCommand( "!BOR", &ParseModul::Bor );
+    values.insert( std::make_pair( "!BOR", "5") );
+
     AddMode( "!WEATHER", "Получить погоду на завтра для города Белоруссии : !weather город" );
+    commands.AddCommand( "!WEATHER", &ParseModul::Weather );
+    values.insert( std::make_pair( "!WEATHER", "" ) );
+
     AddMode( "!IBASH", "Получить случайную цитату с ibash.org.ru : !ibash" );
+    commands.AddCommand( "!IBASH", &ParseModul::GetDataFromUrl );
+    values.insert( std::make_pair( "!IBASH", "http://www.infostar.ua/forum/img/bash.php" ) );
+
     AddMode( "!LORQ",  "Получить последнию цитату с lorquotes.ru : !lorq"  );
+    commands.AddCommand( "!LORQ", &ParseModul::GetDataFromUrl );
+    values.insert( std::make_pair( "!LORQ", "http://www.infostar.ua/forum/img/lorq.php" ) );
+
     AddMode( "!WIKI", "Поиск по вики linuxportal.by : !wiki соловосочетание" );
+    commands.AddCommand( "!WIKI", &ParseModul::Wiki );
+    values.insert( std::make_pair( "!WIKI", "" ) );
+
     AddMode( "!CALENDAR" );
+    commands.AddCommand( "!CALENDAR", &ParseModul::GetDataFromUrl );
+    values.insert( std::make_pair( "!CALENDAR"
+				   , "http://www.infostar.ua/forum/img/calend.php" ) );
 }
 
 ParseModul::~ParseModul(){
@@ -53,67 +72,34 @@ bool ParseModul::Message( gloox::MUCRoom* room
 				  , const std::string &upper
 				  , const gloox::JID &from
 			          ,  bool priv ){
-    std::string result;
-    const std::string FIRST_WORD( getWord( upper, 0 )  );
-    
-    const int MODES_LENGTH = 6;
-    const std::string modes[ MODES_LENGTH ] = {   "!BOR"
-						, "!WEATHER"
-						, "!IBASH"
-						, "!LORQ"
-						, "!CALENDAR"
-						, "!WIKI" };
-
-    std::string city = citys->find( "ЖЛОБИН" )->second;
-    bool isHave = 0;
-
-    for( int i = 0; i < MODES_LENGTH; ++i )
-	if( modes[ i ] == FIRST_WORD ){
-	    switch( i ){
-	    case 0 :
-		     result = Bor( 5 );
-		     break;
-	    case 1 : 
-		     if( numberOfWords( upper ) > 1 )
-			 if( citys->find( getWord( upper, 1 ) ) != citys->end() )
-			     city = citys->find( getWord( upper, 1 ) )->second;
-		     result = Weather( city );
-		     break;
-	    case 2 : 
-		     result = GetDataFromUrl("http://www.infostar.ua/forum/img/bash.php");
-		     break;
-	    case 3 : 
-	 	     result = GetDataFromUrl("http://www.infostar.ua/forum/img/lorq.php");
-		     break;
-	    case 4 : 
-		     result = GetDataFromUrl("http://www.infostar.ua/forum/img/calend.php");
-		     break;
-	    case 5 : 
-		     if( numberOfWords( normal ) < 2 ){
-			 LowLength( room, from, priv );
-			 return 0;
-		     }
-		     result = Wiki( getWordsFrom( normal, 1 ) );
-		     break;
-	    default:
-		break;
-	    }
-	    isHave = 1;
-	}
-
-    if( !isHave )
+    const std::string COMMAND( getWord( upper, 0 )  );
+    std::string COMMAND_LINE;
+    if( values.find( COMMAND ) != values.end( ) )
+	COMMAND_LINE = values.find( COMMAND )->second;
+    else
 	return 0;
+    if( COMMAND_LINE.empty( ) )
+	COMMAND_LINE = ( numberOfWords( normal ) > 1 ? getWordsFrom( normal, 1 ) : "" );
 
-    result = ( result.empty() ? "Ошибка, насяльника !" : result );
-    Send( room, from, result, priv );
-    
-    return 1;
-
+    if( commands.GetPtr( COMMAND ) ){
+	std::string result = ( ( this->*( commands.GetPtr( COMMAND ) ) )( room, COMMAND_LINE ) );
+	if( result.empty( ) )
+	    result = "Ошибка, насяльника !";
+	Send( room, from, result, priv );
+	return 1;
+    }
+    return 0;
 }
 
-std::string ParseModul::Bor( unsigned int howMany = 0 ){
+std::string ParseModul::Bor( gloox::MUCRoom*, const std::string &number ){
+    unsigned int howMany;
+    try{
+	howMany = boost::lexical_cast< unsigned int >( number );
+    } catch( boost::bad_lexical_cast ){
+	return "";
+    }
     const std::string url = "http://bashh.blog.tut.by/";
-    std::string source = GetDataFromUrl(  url );
+    std::string source = GetDataFromUrl( 0, url );
     if(  source.empty( ) )
 	return "";
 
@@ -150,9 +136,17 @@ std::string ParseModul::Bor( unsigned int howMany = 0 ){
     return result;
 }
 
-std::string ParseModul::Weather( const std::string &city ){
+std::string ParseModul::Weather( gloox::MUCRoom*, const std::string &cmd ){
+    std::string city;
+    if( numberOfWords( cmd ) ){
+	if( citys->find( getWord( toUpper( cmd ), 0 ) ) != citys->end() )
+	    city = citys->find( getWord( toUpper( cmd ), 0 ) )->second;
+	else 
+	    city = citys->find( "ГОМЕЛЬ" )->second;
+    } else
+	city = citys->find( "ГОМЕЛЬ" )->second;
     const std::string url = "http://pogoda.tut.by/city/" + city + ".html?detail=1";
-    std::string source = GetDataFromUrl(  url );
+    std::string source = GetDataFromUrl( 0, url );
     if( source.empty( ) )
 	return "";
 
@@ -203,13 +197,17 @@ std::string ParseModul::Weather( const std::string &city ){
     return ( "Завтра там будет " + weather + ", при температуре " + temperature + "°C");
 }
 
-std::string ParseModul::Wiki( std::string quary ){
+std::string ParseModul::Wiki( gloox::MUCRoom*, const std::string &quaryString ){
+    if( quaryString.empty( ) )
+	return "";
+
+    std::string quary = quaryString;
     Replace( quary, " ", "+" );
     const std::string server = "http://linuxportal.by";
     std::string url = server + "/wiki/index.php?ns0=2&search=" 
 	+ quary 
 	+ "&searchx=Искать";
-    std::string result = GetDataFromUrl( url );
+    std::string result = GetDataFromUrl( 0, url );
     if( result.empty( ) )
 	return "";
 
@@ -250,7 +248,7 @@ std::string ParseModul::Wiki( std::string quary ){
     return result;
 }
 
-std::string ParseModul::GetDataFromUrl( const std::string &url ) const {
+std::string ParseModul::GetDataFromUrl( gloox::MUCRoom*, const std::string &url ){
     CURLcode curlResult;
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str() );
     curlResult = curl_easy_perform(curl);
