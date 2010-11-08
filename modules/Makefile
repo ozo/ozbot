@@ -1,5 +1,5 @@
 CFLAGS = -Wall -O2
-COMPILER = g++-4.5
+COMPILER = g++
 
 all: modules helpfiles
 

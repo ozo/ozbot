@@ -21,7 +21,6 @@ public:
 	  , const std::list< std::string > &mods );
     ~Bot();
     void                      Start();
-    bool                      ConnectionError();
     virtual void              onConnect();
     virtual void              onDisconnect( gloox::ConnectionError e ){}
     virtual bool              onTLSConnect(const gloox::CertInfo&){ return 1; }
@@ -35,8 +34,6 @@ protected:
 private:
     pthread_t                 thread;
     std::time_t               pingPongRequestTime;
-    bool                      badConnection;
-
     static void*              ThreadMetod( void *tmp );
     void                      Ping();
     virtual void              handleEvent( const gloox::Event  &event);

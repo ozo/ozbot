@@ -1,5 +1,5 @@
 CFLAGS = -Wall -O2
-COMPILER = g++-4.5
+COMPILER = g++
 
 all: other
 	$(COMPILER) -o bot *.o modules/*.o -lgloox -lcurl -lpthread -lgmp -lgmpxx

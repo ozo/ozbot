@@ -7,6 +7,7 @@
 #include "aliasmodul.h"
 
 #include "../analyzemsg.h"
+#include "../connectionstate.h"
 
 #include <algorithm>
 
@@ -148,6 +149,7 @@ bool MUCModul::Message( gloox::MUCRoom* room
 			     ; i != rooms.end(); ++i )
 			(*i)->leave("Всем чмоки-поки");
 		    client->disconnect();
+		    ConnectionState::SetError( gloox::ConnUserDisconnected );
 		}else
 		    NotPermissed( from, room, priv );
 		break;

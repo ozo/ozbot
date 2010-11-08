@@ -1,8 +1,11 @@
 #include "bot.h"
 #include "loger.h"
 #include "modules/modul.h"
+#include "connectionstate.h"
 
 #include <unistd.h>
+
+gloox::ConnectionError ConnectionState::error = gloox::ConnNoError;
 
 Bot::Bot(  const std::string jid_
 	   , const std::string pswd
@@ -14,8 +17,8 @@ Bot::Bot(  const std::string jid_
     , password( pswd )
     , mucModul( 0 )
     , thread( 0 )
-    , pingPongRequestTime( 0 )
-    , badConnection( 0 ){
+    , pingPongRequestTime( 0 ){
+    ConnectionState::SetError( gloox::ConnNoError );
     mucs = mucJids;
     RootModul::SetRoots( rootJid );
     modes = mods;
@@ -43,10 +46,6 @@ void Bot::Start(){
     j->connect();
 }    
 
-bool Bot::ConnectionError(){
-    return badConnection;
-}
-
 void Bot::onConnect(){
     mucModul = new MUCModul( j, mucs, modes );
     pthread_create(&thread, NULL, Bot::ThreadMetod, static_cast< void* >( this) );
@@ -58,15 +57,20 @@ void *Bot::ThreadMetod( void *tmp ){
 }
 
 void Bot::Ping(){
-    const int DEADLINE_TIME = 10;
+    const int DEADLINE_TIME = 60;
     while( 1 ){
-	sleep( 10 );
+	for( int i = 0; i < 19; ++i ){
+	    sleep( 1 );
+	    if( ConnectionState::GetError() == gloox::ConnUserDisconnected )
+		return;
+	}
+
 	if( !pingPongRequestTime ){
 	    pingPongRequestTime = std::time( 0 );
 	    j->xmppPing( jid, this );
 	} else 
 	    if( ( std::time( 0 ) - pingPongRequestTime ) > DEADLINE_TIME ){
-		badConnection = 1;
+		ConnectionState::SetError( gloox::ConnNotConnected );
 		j->disconnect();
 		return;
 	    }
