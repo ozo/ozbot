@@ -117,8 +117,12 @@ std::string ParseModul::Bor( gloox::MUCRoom*, const std::string &number ){
 		tmp.erase( 0, 1 );
 	    else 
 		break;
-	
-	Replace( tmp, "<br />",  ""   );
+
+	Replace( tmp, "<p>", "" );
+	Replace( tmp, "</p>", "\n" );
+	Replace( tmp, "&#8211;", "-" );
+	Replace( tmp, "&#8230;", "..." );
+	Replace( tmp, "<br />",  "\n"   );
 	Replace( tmp, "<br>",    "\n" );
 	Replace( tmp, "&#60;",   "<"  );
 	Replace( tmp, "&#62;",   ">"  );
