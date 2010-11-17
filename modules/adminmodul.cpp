@@ -47,6 +47,10 @@ bool AdminModul::Message( gloox::MUCRoom* room
 			  , const std::string &upper
 			  , const gloox::JID &from
 			  ,  bool priv ){
+    const std::string commandName  = getWord( upper, 0 );
+    if( !commands.GetPtr( commandName ) )
+	return 0;
+
     if( !IsRoot( from.full() ) ){
 	NotPermissed( from, room, priv );
 	return 0;
@@ -57,13 +61,11 @@ bool AdminModul::Message( gloox::MUCRoom* room
 	return 0;
     }
 
-    const std::string commandName  = getWord( upper, 0 );
     const std::string cmd          = getWordsFrom( normal, 1 );
-    if( commands.GetPtr( commandName ) )
-	if( !( this->*( commands.GetPtr( commandName ) ) )( room, cmd ) ){
-	    LowLength( room, from, priv );
-	    return 0;
-	}
+    if( !( this->*( commands.GetPtr( commandName ) ) )( room, cmd ) ){
+	LowLength( room, from, priv );
+	return 0;
+    }
     return 1;
 }
 
@@ -112,67 +114,51 @@ bool AdminModul::SetRole( gloox::MUCRoom *room, const std::string &cmd ){
     if( numberOfWords( cmd ) < 2 )
 	return 0;
     const std::string role = getWord( toUpper( cmd ), 0 );
-    const std::string user = getWordsFrom( toUpper( cmd ), 1 );
+    const std::string user = getWordsFrom( cmd, 1 );
 
-    const int ROLES     = 4;
-    std::string roles[] = { "NONE", "GUEST", "VISITOR", "MODERATOR" };
-    bool isHave = 0;
-    for( int i = 0; i < ROLES; ++i )
-	if( role == roles[i] ){
-	    gloox::MUCRoomRole to = gloox::RoleNone;
-	    switch( i ){
-	    case 0 : to = gloox::RoleNone;        break;
-	    case 1 : to = gloox::RoleVisitor;     break;
-	    case 2 : to = gloox::RoleParticipant; break;
-	    case 3 : to = gloox::RoleModerator;   break;
-	    }
-	    room->setRole( user, to );
-	    isHave = 1;
-	    break;
-	}
-    return isHave;
+    std::map< std::string, gloox::MUCRoomRole > roles;
+    roles.insert( std::make_pair( "NONE", gloox::RoleNone ) );
+    roles.insert( std::make_pair( "GUEST", gloox::RoleVisitor ) );
+    roles.insert( std::make_pair( "VISITOR", gloox::RoleParticipant ) );
+    roles.insert( std::make_pair( "MODERATOR", gloox::RoleModerator ) );
+    if( roles.find( role ) != roles.end( ) )
+	room->setRole( user, roles.find( role )->second );
+    else
+	return 0;
+    return 1;
 }
 
 bool AdminModul::SetAff( gloox::MUCRoom *room, const std::string &cmd ){
     if( numberOfWords( cmd ) < 2 )
 	return 0;
-    const std::string aff  = getWord( toUpper( cmd ), 0 );
-    const std::string user = getWordsFrom( toUpper( cmd ), 1 );
 
-    const int AFFLES = 5;
-    const std::string affles[] = { "NONE", "OUTCAST", "MEMBER", "OWNER", "ADMIN" };
-    bool isHave = 0;
-    for( int i = 0; i < AFFLES; ++i )
-	if( aff == affles[i] ){
-	    gloox::MUCRoomAffiliation to = gloox::AffiliationNone;
-	    switch( i ){
-	    case 0 : to = gloox::AffiliationNone;    break;
-	    case 1 : to = gloox::AffiliationOutcast; break;
-	    case 2 : to = gloox::AffiliationMember;  break;
-	    case 3 : to = gloox::AffiliationOwner;   break;
-	    case 4 : to = gloox::AffiliationAdmin;   break;
-	    }
-	    room->setAffiliation( user, to, "Так было велено мне" );
-	    isHave = 1;
-	    break;
-	}
-    return isHave;
+    const std::string aff  = getWord( toUpper( cmd ), 0 );
+    const std::string user = getWordsFrom( cmd, 1 );
+
+    std::map< std::string, gloox::MUCRoomAffiliation > affs;
+    affs.insert( std::make_pair( "NONE", gloox::AffiliationNone ) );
+    affs.insert( std::make_pair( "OUTCAST", gloox::AffiliationOutcast ) );
+    affs.insert( std::make_pair( "MEMBER", gloox::AffiliationMember ) );
+    affs.insert( std::make_pair( "OWNER", gloox::AffiliationOwner ) );
+    affs.insert( std::make_pair( "ADMIN", gloox::AffiliationAdmin ) );
+    if( affs.find( aff ) != affs.end( ) )
+	room->setAffiliation( user, affs.find( aff )->second, "Так было велено мне" );
+    else
+	return 0;
+    return 1;
 }
 
 gloox::Presence::PresenceType AdminModul::GetPresence( const std::string &from ) const {
-    const int TYPES_NUMBER    = 5;
-    const std::string types[] = { "ONLINE", "CHAT", "AWAY", "DND", "XA" };
-    gloox::Presence::PresenceType cur = gloox::Presence::Error;
-    for( int i = 0; i < TYPES_NUMBER; ++i )
-	if( types[ i ] == from )
-	    switch( i ){
-	    case 0 : cur = gloox::Presence::Available; break;
-	    case 1 : cur = gloox::Presence::Chat; break;
-	    case 2 : cur = gloox::Presence::Away; break;
-	    case 3 : cur = gloox::Presence::DND; break;
-	    case 4 : cur = gloox::Presence::XA; break;
-	    }
-    return cur;
+    std::map< std::string, gloox::Presence::PresenceType > presentes;
+    presentes.insert( std::make_pair( "ONLINE", gloox::Presence::Available ) );
+    presentes.insert( std::make_pair( "CHAT", gloox::Presence::Chat ) );
+    presentes.insert( std::make_pair( "AWAY", gloox::Presence::Away ) );
+    presentes.insert( std::make_pair( "DND", gloox::Presence::DND ) );
+    presentes.insert( std::make_pair( "XA", gloox::Presence::XA ) );
+    if( presentes.find( from ) != presentes.end( ) )
+	return presentes.find( from )->second;
+    else
+	return gloox::Presence::Error;
 }
 
 /*AffiliationNone 	No affiliation with the room.

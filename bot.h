@@ -8,8 +8,6 @@
 #include <gloox/connectionlistener.h>
 
 #include <pthread.h>
-
-#include <queue>
 #include <ctime>
 
 class Bot : public gloox::ConnectionListener, gloox::EventHandler {
@@ -21,10 +19,10 @@ public:
 	  , const std::list< std::string > &mods );
     ~Bot();
     void                      Start();
+protected:
     virtual void              onConnect();
     virtual void              onDisconnect( gloox::ConnectionError e ){}
     virtual bool              onTLSConnect(const gloox::CertInfo&){ return 1; }
-protected:
     gloox::Client             *j;
     std::string               jid;
     std::string               password;

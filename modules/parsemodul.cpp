@@ -207,8 +207,8 @@ std::string ParseModul::Wiki( gloox::MUCRoom*, const std::string &quaryString ){
 
     std::string quary = quaryString;
     Replace( quary, " ", "+" );
-    const std::string server = "http://linuxportal.by";
-    std::string url = server + "/wiki/index.php?ns0=2&search=" 
+    const std::string server = "http://wiki.linuxportal.by";
+    std::string url = server + "/index.php?ns0=2&search=" 
 	+ quary 
 	+ "&searchx=Искать";
     std::string result = GetDataFromUrl( 0, url );

@@ -61,7 +61,7 @@ void Bot::Ping(){
     while( 1 ){
 	for( int i = 0; i < 19; ++i ){
 	    sleep( 1 );
-	    if( ConnectionState::GetError() == gloox::ConnUserDisconnected )
+	    if( j->state( ) == gloox::StateDisconnected )
 		return;
 	}
 
