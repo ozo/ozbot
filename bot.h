@@ -18,6 +18,7 @@ public:
 	  , const std::list< std::string > &rootJid
 	  , const std::list< std::string > &mods );
     ~Bot();
+    inline bool               ConnectionError( );
     void                      Start();
 protected:
     virtual void              onConnect();
@@ -30,11 +31,16 @@ protected:
     std::list< std::string >  modes;
     MUCModul                  *mucModul;
 private:
+    bool                      connectionError;
     pthread_t                 thread;
     std::time_t               pingPongRequestTime;
     static void*              ThreadMetod( void *tmp );
     void                      Ping();
     virtual void              handleEvent( const gloox::Event  &event);
 };
+
+bool Bot::ConnectionError( ){
+    return connectionError;
+}
 
 #endif

@@ -40,17 +40,17 @@ ParseModul::ParseModul( gloox::Client *cl )
     commands.AddCommand( "!BOR", &ParseModul::Bor );
     values.insert( std::make_pair( "!BOR", "5") );
 
-    AddMode( "!WEATHER", "Получить погоду на завтра для города Белоруссии : !weather город" );
-    commands.AddCommand( "!WEATHER", &ParseModul::Weather );
-    values.insert( std::make_pair( "!WEATHER", "" ) );
+    //    AddMode( "!WEATHER", "Получить погоду на завтра для города Белоруссии : !weather город" );
+    //commands.AddCommand( "!WEATHER", &ParseModul::Weather );
+    //values.insert( std::make_pair( "!WEATHER", "" ) );
 
     AddMode( "!IBASH", "Получить случайную цитату с ibash.org.ru : !ibash" );
     commands.AddCommand( "!IBASH", &ParseModul::GetDataFromUrl );
-    values.insert( std::make_pair( "!IBASH", "http://www.infostar.ua/forum/img/bash.php" ) );
+    values.insert( std::make_pair( "!IBASH", "http://linuxportal.by/ibash.php" ) );
 
     AddMode( "!LORQ",  "Получить последнию цитату с lorquotes.ru : !lorq"  );
     commands.AddCommand( "!LORQ", &ParseModul::GetDataFromUrl );
-    values.insert( std::make_pair( "!LORQ", "http://www.infostar.ua/forum/img/lorq.php" ) );
+    values.insert( std::make_pair( "!LORQ", "http://linuxportal.by/lorq.php" ) );
 
     AddMode( "!WIKI", "Поиск по вики linuxportal.by : !wiki соловосочетание" );
     commands.AddCommand( "!WIKI", &ParseModul::Wiki );
@@ -59,7 +59,7 @@ ParseModul::ParseModul( gloox::Client *cl )
     AddMode( "!CALENDAR" );
     commands.AddCommand( "!CALENDAR", &ParseModul::GetDataFromUrl );
     values.insert( std::make_pair( "!CALENDAR"
-				   , "http://www.infostar.ua/forum/img/calend.php" ) );
+				   , "http://linuxportal.by/calendar.php" ) );
 }
 
 ParseModul::~ParseModul(){

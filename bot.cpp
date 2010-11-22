@@ -1,11 +1,8 @@
 #include "bot.h"
 #include "loger.h"
 #include "modules/modul.h"
-#include "connectionstate.h"
 
 #include <unistd.h>
-
-gloox::ConnectionError ConnectionState::error = gloox::ConnNoError;
 
 Bot::Bot(  const std::string jid_
 	   , const std::string pswd
@@ -16,9 +13,9 @@ Bot::Bot(  const std::string jid_
     , jid( jid_ )
     , password( pswd )
     , mucModul( 0 )
+    , connectionError( 0 )
     , thread( 0 )
     , pingPongRequestTime( 0 ){
-    ConnectionState::SetError( gloox::ConnNoError );
     mucs = mucJids;
     RootModul::SetRoots( rootJid );
     modes = mods;
@@ -47,6 +44,7 @@ void Bot::Start(){
 }    
 
 void Bot::onConnect(){
+    delete mucModul;
     mucModul = new MUCModul( j, mucs, modes );
     pthread_create(&thread, NULL, Bot::ThreadMetod, static_cast< void* >( this) );
 }
@@ -70,7 +68,7 @@ void Bot::Ping(){
 	    j->xmppPing( jid, this );
 	} else 
 	    if( ( std::time( 0 ) - pingPongRequestTime ) > DEADLINE_TIME ){
-		ConnectionState::SetError( gloox::ConnNotConnected );
+		connectionError = 1;
 		j->disconnect();
 		return;
 	    }

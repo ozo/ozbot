@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include "bot.h"
-#include "connectionstate.h"
 #include "loger.h"
 
 void deleteComment( std::string &String ){
@@ -85,9 +84,11 @@ int main(){
 	for( ;; ){
 	    bot = new Bot( jid, pswd, MUCJids, roots, modes );
 	    bot->Start();
-	    delete bot;
-	    if( ConnectionState::GetError( ) != gloox::ConnNotConnected )
+	    if( !bot->ConnectionError( ) ){
+		delete bot;
 		break;
+	    }
+	    bot->Start( );
 	    DEBUG << Loger::DEBUG << "Restart bot, bad connection";
 	    sleep( 60 );
 	}
