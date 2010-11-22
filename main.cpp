@@ -17,10 +17,10 @@ void deleteComment( std::string &String ){
 	String.clear();
 }
 
-inline bool IsHave( const std::list< std::string > &lst, const std::string &str ){
+bool IsHave( const std::list< std::string > &lst, const std::string &str ){
     return ( std::find( lst.begin( ), lst.end( ), str ) != lst.end( ) );
 }
-
+    
 int main(){
     std::list< std::string > file;
     std::ifstream config( "config" );
@@ -80,15 +80,13 @@ int main(){
 	DEBUG << Loger::DEBUG << "Неправильно оформлен конфигурационный файл\n"
 	    "Обратитесь к документации, запуск бота невозможен\n";
     else {
-	Bot *bot = 0;
+	Bot *bot = new Bot( jid, pswd, MUCJids, roots, modes );
 	for( ;; ){
-	    bot = new Bot( jid, pswd, MUCJids, roots, modes );
 	    bot->Start();
 	    if( !bot->ConnectionError( ) ){
 		delete bot;
 		break;
 	    }
-	    bot->Start( );
 	    DEBUG << Loger::DEBUG << "Restart bot, bad connection";
 	    sleep( 60 );
 	}

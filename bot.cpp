@@ -40,7 +40,14 @@ Bot::~Bot(){
 }
 
 void Bot::Start(){
+    connectionError = 0;
+    pingPongRequestTime = 0;
     j->connect();
+    if( thread ){
+	pthread_join( thread, 0 );
+	pthread_detach( thread );
+	thread = 0;
+    }
 }    
 
 void Bot::onConnect(){
